@@ -63,7 +63,7 @@ button{padding:12px;border:none;border-radius:8px;font-weight:bold;margin-top:10
 </div>
 
 <div class="card" onclick="openModal('gym')">
-<h3>🏋️ Gym</h3>
+<h3>🏋️ Gym Crowd</h3>
 <div id="gym-status" class="status orange">Loading...</div>
 <div id="gym-time" class="time"></div>
 </div>
@@ -225,7 +225,7 @@ document.getElementById(place+'-status').innerHTML=d.count+" courts";
 document.getElementById(place+'-status').className='status blue';
 }
 else{
-document.getElementById(place+'-status').innerHTML=d.status;
+document.getElementById(place+'-status').innerHTML = d.status || '';
 document.getElementById(place+'-status').className='status blue';
 }
 
