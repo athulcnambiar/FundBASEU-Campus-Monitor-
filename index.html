@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,48 +9,68 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);margin:0;padding:20px;color:#333}
-.container{max-width:1200px;margin:auto}
-h1{text-align:center;color:#fff;margin-bottom:10px}
-.live-counter{text-align:center;color:#fff;font-weight:bold;margin-bottom:25px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:15px}
-.card{background:#fff;padding:20px;border-radius:15px;box-shadow:0 6px 20px rgba(0,0,0,.2);cursor:pointer;transition:.2s}
-.card:hover{transform:translateY(-3px)}
+body{font-family:sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);margin:0;padding:20px}
+h1{text-align:center;color:white}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:15px;margin-top:20px}
+.card{background:white;padding:20px;border-radius:15px;box-shadow:0 5px 20px rgba(0,0,0,.2);cursor:pointer}
 .status{margin-top:10px;padding:8px;border-radius:20px;text-align:center;font-weight:bold}
-.time{margin-top:6px;font-size:12px;color:#666;text-align:center}
-.pending{margin-top:6px;font-size:12px;color:#f59e0b;text-align:center}
-.green{background:#10b981;color:#fff}
-.red{background:#ef4444;color:#fff}
-.blue{background:#3b82f6;color:#fff}
-.orange{background:#f59e0b;color:#fff}
-button{padding:12px;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
-.reload-btn{position:fixed;bottom:20px;right:20px;background:#3b82f6;color:#fff}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center}
-.modal-content{background:#fff;padding:25px;border-radius:15px;width:90%;max-width:400px}
-.btn-group{display:grid;gap:10px;margin-top:15px}
-input{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:1px solid #ccc}
-.note{font-size:12px;color:#666;margin-top:8px}
+.time,.pending,.votes{font-size:12px;text-align:center;margin-top:6px}
+.green{background:#10b981;color:white}
+.red{background:#ef4444;color:white}
+.blue{background:#3b82f6;color:white}
+.orange{background:#f59e0b;color:white}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center}
+.modal-content{background:white;padding:20px;border-radius:12px;width:90%;max-width:350px}
+button{padding:10px;border:none;border-radius:6px;font-weight:bold;margin-top:10px}
 </style>
 </head>
 <body>
 
-<button class="reload-btn" onclick="location.reload()">Stay Updated 🔄</button>
-
-<div class="container">
 <h1>🎓 FundBASEU Live Tracker</h1>
-<div class="live-counter">👥 Live Users: <span id="liveCount">0</span></div>
+<div style="text-align:center;color:white">👥 Live Users: <span id="liveCount">0</span></div>
 
 <div class="grid">
 
-${['mess','nescafe','nandini','gym','badminton'].map(id=>`
-<div class="card" onclick="openModal('${id}')">
-<h3>${id==='mess'?'🍽️ Mess':id==='nescafe'?'☕ Nescafé':id==='nandini'?'🥛 Nandini':id==='gym'?'🏋️ Gym':'🏸 Badminton Courts'}</h3>
-<div id="${id}-status" class="status orange">Loading...</div>
-<div id="${id}-time" class="time"></div>
-<div id="${id}-pending" class="pending"></div>
-</div>`).join('')}
-
+<div class="card" onclick="openModal('mess')">
+<h3>🍽️ Mess</h3>
+<div id="mess-status" class="status orange">Loading...</div>
+<div id="mess-votes" class="votes"></div>
+<div id="mess-pending" class="pending"></div>
+<div id="mess-time" class="time"></div>
 </div>
+
+<div class="card" onclick="openModal('nescafe')">
+<h3>☕ Nescafé</h3>
+<div id="nescafe-status" class="status orange">Loading...</div>
+<div id="nescafe-votes" class="votes"></div>
+<div id="nescafe-pending" class="pending"></div>
+<div id="nescafe-time" class="time"></div>
+</div>
+
+<div class="card" onclick="openModal('nandini')">
+<h3>🥛 Nandini</h3>
+<div id="nandini-status" class="status orange">Loading...</div>
+<div id="nandini-votes" class="votes"></div>
+<div id="nandini-pending" class="pending"></div>
+<div id="nandini-time" class="time"></div>
+</div>
+
+<div class="card" onclick="openModal('gym')">
+<h3>🏋️ Gym</h3>
+<div id="gym-status" class="status orange">Loading...</div>
+<div id="gym-votes" class="votes"></div>
+<div id="gym-pending" class="pending"></div>
+<div id="gym-time" class="time"></div>
+</div>
+
+<div class="card" onclick="openModal('badminton')">
+<h3>🏸 Badminton</h3>
+<div id="badminton-status" class="status orange">Loading...</div>
+<div id="badminton-votes" class="votes"></div>
+<div id="badminton-pending" class="pending"></div>
+<div id="badminton-time" class="time"></div>
+</div>
+
 </div>
 
 <div class="modal" id="modal">
@@ -59,129 +79,113 @@ ${['mess','nescafe','nandini','gym','badminton'].map(id=>`
 
 <script>
 
-var firebaseConfig = {
-  apiKey: "AIzaSyBeVAkgLuLzq6uYo6M5begEMi_jwi-nAoU",
-  authDomain: "fundbaseu-tracker.firebaseapp.com",
-  databaseURL: "https://fundbaseu-tracker-default-rtdb.firebaseio.com",
-  projectId: "fundbaseu-tracker",
-  storageBucket: "fundbaseu-tracker.firebasestorage.app",
-  messagingSenderId: "452144906894",
-  appId: "1:452144906894:web:0e5c211b4e2e309d5f7fdf"
+var firebaseConfig={
+apiKey:"AIzaSyBeVAkgLuLzq6uYo6M5begEMi_jwi-nAoU",
+authDomain:"fundbaseu-tracker.firebaseapp.com",
+databaseURL:"https://fundbaseu-tracker-default-rtdb.firebaseio.com",
+projectId:"fundbaseu-tracker",
+storageBucket:"fundbaseu-tracker.firebasestorage.app",
+messagingSenderId:"452144906894",
+appId:"1:452144906894:web:0e5c211b4e2e309d5f7fdf"
 };
 
 firebase.initializeApp(firebaseConfig);
-var db = firebase.database();
+var db=firebase.database();
 
 // Presence
-var pRef = db.ref("presence").push();
-pRef.set(true);
-pRef.onDisconnect().remove();
-db.ref("presence").on("value", s => {
-  document.getElementById("liveCount").innerText = s.numChildren();
+var p=db.ref("presence").push();
+p.set(true);
+p.onDisconnect().remove();
+db.ref("presence").on("value",s=>{
+document.getElementById("liveCount").innerText=s.numChildren();
 });
 
-const VOTE_THRESHOLD = 3;
-const LIMIT_WINDOW = 5 * 60 * 1000;
-const LIMIT_COUNT = 4;
+const THRESHOLD=3;
+const EXPIRE_TIME=10*60*1000;
 
-function rateLimit(place, callback){
-  var metaRef = db.ref(place + "_meta");
-  metaRef.transaction(function(data){
-    var now = Date.now();
-    if(!data) data = {updates:[]};
-    data.updates = (data.updates || []).filter(t => now - t < LIMIT_WINDOW);
-    if(data.updates.length >= LIMIT_COUNT) return;
-    data.updates.push(now);
-    return data;
-  }, function(error, committed){ callback(committed); });
+function openModal(place){
+var html="<h3>Vote</h3>";
+if(place==='gym'||place==='badminton'){
+html+="<input type='number' id='val'><button onclick=vote('"+place+"',document.getElementById('val').value)>Submit</button>";
+}else{
+html+="<button onclick=vote('"+place+"','yes')>Yes</button>";
+html+="<button onclick=vote('"+place+"','no')>No</button>";
+}
+document.getElementById('modal-content').innerHTML=html;
+document.getElementById('modal').style.display='flex';
 }
 
-function vote(place, value){
-  if(!value) return alert("Enter valid value");
+function vote(place,value){
+if(!value) return alert("Enter value");
+var voteRef=db.ref(place+"_votes/"+value);
+voteRef.transaction(c=>(c||0)+1,function(e,committed,snap){
+if(!snap)return;
+var votes=snap.val();
+var remaining=THRESHOLD-votes;
 
-  rateLimit(place,function(ok){
-    if(!ok){ alert("Max 4 updates in 5 mins reached"); return; }
-
-    var voteRef = db.ref(place + "_votes/" + value);
-    voteRef.transaction(function(current){ return (current||0)+1; },
-    function(error, committed, snapshot){
-      var votes = snapshot.val();
-      var remaining = VOTE_THRESHOLD - votes;
-
-      if(votes >= VOTE_THRESHOLD){
-        if(place==='gym' || place==='badminton'){
-          db.ref(place).set({count:parseInt(value), timestamp:Date.now()});
-        } else {
-          db.ref(place).set({status:value, timestamp:Date.now()});
-        }
-        db.ref(place + "_votes").remove();
-        db.ref(place + "_pending").remove();
-      } else {
-        db.ref(place + "_pending").set({
-          message: "Awaiting confirmation from " + remaining + " more user(s)..."
-        });
-      }
-    });
-  });
-  document.getElementById('modal').style.display='none';
+if(votes>=THRESHOLD){
+if(place==='gym'||place==='badminton'){
+db.ref(place).set({count:parseInt(value),timestamp:Date.now()});
+}else{
+db.ref(place).set({status:value,timestamp:Date.now()});
+}
+db.ref(place+"_votes").remove();
+db.ref(place+"_pending").remove();
+}else{
+db.ref(place+"_pending").set({message:"Awaiting confirmation from "+remaining+" more user(s)...",timestamp:Date.now()});
+}
+});
+document.getElementById('modal').style.display='none';
 }
 
-function openModal(type){
-  var modal=document.getElementById('modal');
-  var content=document.getElementById('modal-content');
-  var html="";
-
-  if(['mess','nescafe','nandini'].includes(type)){
-    html+=`<h3>Vote ${type}</h3>
-    <div class='btn-group'>
-    <button onclick="vote('${type}','available' )">Available</button>
-    <button onclick="vote('${type}','not_available')">Not Available</button>
-    </div><div class='note'>Needs 3 matching votes</div>`;
-  }
-
-  if(type==='gym' || type==='badminton'){
-    html+=`<h3>Vote ${type}</h3>
-    <input type='number' id='val'>
-    <div class='btn-group'>
-    <button onclick="vote('${type}',document.getElementById('val').value)">Submit</button>
-    </div><div class='note'>Needs 3 matching votes</div>`;
-  }
-
-  content.innerHTML=html;
-  modal.style.display='flex';
+function expireVotes(place){
+db.ref(place+"_pending").once("value",snap=>{
+if(!snap.val())return;
+if(Date.now()-snap.val().timestamp>EXPIRE_TIME){
+db.ref(place+"_votes").remove();
+db.ref(place+"_pending").remove();
+}
+});
 }
 
-function timeAgo(timestamp){
-  if(!timestamp) return "";
-  var diff = Math.floor((Date.now() - timestamp)/60000);
-  if(diff < 1) return "Updated just now";
-  if(diff === 1) return "Updated 1 minute ago";
-  return "Updated " + diff + " minutes ago";
+function timeAgo(ts){
+if(!ts)return"";
+var m=Math.floor((Date.now()-ts)/60000);
+if(m<1)return"Updated just now";
+return"Updated "+m+" min ago";
 }
 
 ['mess','nescafe','nandini','gym','badminton'].forEach(place=>{
-  var statusEl=document.getElementById(place+'-status');
-  var timeEl=document.getElementById(place+'-time');
-  var pendingEl=document.getElementById(place+'-pending');
 
-  db.ref(place).on('value',snap=>{
-    var data=snap.val();
-    if(!data){ statusEl.innerHTML="Not Updated"; statusEl.className='status orange'; timeEl.innerHTML=""; return; }
+// Status
+db.ref(place).on("value",snap=>{
+var d=snap.val();
+if(!d)return;
+if(place==='gym'||place==='badminton'){
+document.getElementById(place+'-status').innerHTML=d.count;
+document.getElementById(place+'-status').className='status blue';
+}else{
+document.getElementById(place+'-status').innerHTML=d.status==='yes'?"Yes ✓":"No ✗";
+document.getElementById(place+'-status').className=d.status==='yes'?'status green':'status red';
+}
+document.getElementById(place+'-time').innerHTML=timeAgo(d.timestamp);
+});
 
-    if(place==='gym' || place==='badminton'){
-      statusEl.innerHTML = data.count + (place==='badminton'?' / 4 Courts Occupied':' people');
-      statusEl.className='status blue';
-    } else {
-      statusEl.innerHTML = data.status==='available' || data.status==='open' ? "Available ✓" : "Not Available ✗";
-      statusEl.className = (data.status==='available'||data.status==='open') ? 'status green' : 'status red';
-    }
+// Votes count
+db.ref(place+"_votes").on("value",snap=>{
+var total=0;
+snap.forEach(child=>total+=child.val());
+document.getElementById(place+'-votes').innerHTML= total>0?"Votes: "+total+"/3":"";
+});
 
-    timeEl.innerHTML = timeAgo(data.timestamp);
-  });
+// Pending message
+db.ref(place+"_pending").on("value",snap=>{
+document.getElementById(place+'-pending').innerHTML=snap.val()?snap.val().message:"";
+});
 
-  db.ref(place + '_pending').on('value',snap=>{
-    pendingEl.innerHTML = snap.val() ? snap.val().message : "";
-  });
+// Expiry check every 30 sec
+setInterval(()=>expireVotes(place),30000);
+
 });
 
 </script>
