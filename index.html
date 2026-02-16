@@ -1,871 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FundBASEU Tracker</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundBASEU Live Tracker</title>
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 15px;
-        }
+<!-- Firebase v8 (Non-modular for GitHub Pages) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        header h1 {
-            font-size: 2.2em;
-            margin-bottom: 8px;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
-            font-weight: 800;
-            letter-spacing: 1px;
-        }
-
-        header p {
-            font-size: 1em;
-            opacity: 0.95;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
-        }
-
-        .reset-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 10px 15px;
-            background: rgba(239, 68, 68, 0.9);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.85em;
-            font-weight: bold;
-            z-index: 999;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .card:active {
-            transform: scale(0.98);
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.4);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .card-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .card-icon {
-            font-size: 1.8em;
-        }
-
-        .status {
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            text-align: center;
-            margin: 10px 0;
-            font-size: 0.95em;
-        }
-
-        .status.available, .status.open, .status.free, .status.in-cabin {
-            background: #10b981;
-            color: white;
-        }
-
-        .status.finished, .status.closed, .status.occupied, .status.not-in-cabin {
-            background: #ef4444;
-            color: white;
-        }
-
-        .status.moderate, .status.not-updated {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .status.neutral {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .last-updated {
-            font-size: 0.8em;
-            color: #666;
-            text-align: center;
-            margin-top: 8px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.75);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 85vh;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .modal-header {
-            font-size: 1.6em;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .button-group {
-            display: grid;
-            gap: 12px;
-            margin: 20px 0;
-        }
-
-        .btn {
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .btn:active {
-            transform: scale(0.97);
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-available {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-finished {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-occupied {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-free {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-open {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-closed {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-in-cabin {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-not-in-cabin {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-close {
-            background: #6b7280;
-            color: white;
-            margin-top: 15px;
-        }
-
-        .confirmation-notice {
-            background: #fef3c7;
-            padding: 12px;
-            border-radius: 10px;
-            margin: 15px 0;
-            text-align: center;
-            font-weight: bold;
-            color: #92400e;
-            font-size: 0.9em;
-        }
-
-        .input-group {
-            margin: 20px 0;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #333;
-            font-size: 0.95em;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-        }
-
-        .sub-items {
-            display: grid;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .sub-item {
-            padding: 14px;
-            background: #f3f4f6;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: background 0.2s;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .sub-item:active {
-            background: #d1d5db;
-        }
-
-        .sub-item:hover {
-            background: #e5e7eb;
-        }
-
-        .sub-item-name {
-            font-weight: bold;
-            color: #333;
-            font-size: 0.95em;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            header h1 {
-                font-size: 1.8em;
-            }
-
-            header p {
-                font-size: 0.9em;
-            }
-
-            .grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-
-            .card {
-                padding: 18px;
-            }
-
-            .card-title {
-                font-size: 1.2em;
-            }
-
-            .modal-content {
-                padding: 20px;
-                max-height: 90vh;
-            }
-
-            .modal-header {
-                font-size: 1.4em;
-            }
-
-            .btn {
-                padding: 13px;
-                font-size: 0.95em;
-            }
-        }
-
-        @media (max-width: 400px) {
-            header h1 {
-                font-size: 1.5em;
-            }
-
-            .card-title {
-                font-size: 1.1em;
-            }
-
-            .card-icon {
-                font-size: 1.5em;
-            }
-        }
-    </style>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);margin:0;padding:20px;color:#333}
+.container{max-width:1200px;margin:auto}
+h1{text-align:center;color:#fff;margin-bottom:30px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:15px}
+.card{background:#fff;padding:20px;border-radius:15px;box-shadow:0 6px 20px rgba(0,0,0,.2);cursor:pointer;transition:.2s}
+.card:hover{transform:translateY(-3px)}
+.status{margin-top:10px;padding:8px;border-radius:20px;text-align:center;font-weight:bold}
+.green{background:#10b981;color:#fff}
+.red{background:#ef4444;color:#fff}
+.blue{background:#3b82f6;color:#fff}
+.orange{background:#f59e0b;color:#fff}
+button{padding:12px;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
+.reload-btn{position:fixed;bottom:20px;right:20px;background:#3b82f6;color:#fff}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center}
+.modal-content{background:#fff;padding:25px;border-radius:15px;width:90%;max-width:400px}
+.btn-group{display:grid;gap:10px;margin-top:15px}
+input{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:1px solid #ccc}
+</style>
 </head>
 <body>
-    <button class="reset-btn" onclick="resetAllData()">Reset All Data</button>
-    
-    <div class="container">
-        <header>
-            <h1>🎓 FundBASEU Tracker</h1>
-            <p>Real-time campus status updates by students, for students</p>
-        </header>
 
-        <div class="grid">
-            <!-- Mess Card -->
-            <div class="card" onclick="openModal('mess')">
-                <div class="card-header">
-                    <span class="card-title">🍽️ Mess</span>
-                    <span class="card-icon">🍛</span>
-                </div>
-                <div class="status" id="mess-status">Click to update</div>
-                <div class="last-updated" id="mess-time"></div>
-            </div>
+<button class="reload-btn" onclick="location.reload()">Stay Updated 🔄</button>
 
-            <!-- Classrooms Card -->
-            <div class="card" onclick="openModal('classrooms')">
-                <div class="card-header">
-                    <span class="card-title">🏫 Classrooms</span>
-                    <span class="card-icon">📚</span>
-                </div>
-                <div class="status">Click to view rooms</div>
-            </div>
+<div class="container">
+<h1>🎓 FundBASEU Live Tracker</h1>
+<div class="grid">
 
-            <!-- Gym Card -->
-            <div class="card" onclick="openModal('gym')">
-                <div class="card-header">
-                    <span class="card-title">🏋️ Gym</span>
-                    <span class="card-icon">💪</span>
-                </div>
-                <div class="status" id="gym-status">Click to update</div>
-                <div class="last-updated" id="gym-time"></div>
-            </div>
+<div class="card" onclick="openModal('mess')">
+<h3>🍽️ Mess</h3>
+<div id="mess-status" class="status orange">Loading...</div>
+</div>
 
-            <!-- Library Card -->
-            <div class="card" onclick="openModal('library')">
-                <div class="card-header">
-                    <span class="card-title">📚 Library</span>
-                    <span class="card-icon">📖</span>
-                </div>
-                <div class="status" id="library-status">Click to update</div>
-                <div class="last-updated" id="library-time"></div>
-            </div>
+<div class="card" onclick="openModal('nescafe')">
+<h3>☕ Nescafé</h3>
+<div id="nescafe-status" class="status orange">Loading...</div>
+</div>
 
-            <!-- Nescafe Card -->
-            <div class="card" onclick="openModal('nescafe')">
-                <div class="card-header">
-                    <span class="card-title">☕ Nescafe</span>
-                    <span class="card-icon">🥤</span>
-                </div>
-                <div class="status" id="nescafe-status">Click to update</div>
-                <div class="last-updated" id="nescafe-time"></div>
-            </div>
+<div class="card" onclick="openModal('nandini')">
+<h3>🥛 Nandini</h3>
+<div id="nandini-status" class="status orange">Loading...</div>
+</div>
 
-            <!-- Nandini Card -->
-            <div class="card" onclick="openModal('nandini')">
-                <div class="card-header">
-                    <span class="card-title">🥛 Nandini</span>
-                    <span class="card-icon">🧃</span>
-                </div>
-                <div class="status" id="nandini-status">Click to update</div>
-                <div class="last-updated" id="nandini-time"></div>
-            </div>
+<div class="card" onclick="openModal('gym')">
+<h3>🏋️ Gym</h3>
+<div id="gym-status" class="status orange">Loading...</div>
+</div>
 
-            <!-- Badminton Courts Card -->
-            <div class="card" onclick="openModal('badminton')">
-                <div class="card-header">
-                    <span class="card-title">🏸 Badminton</span>
-                    <span class="card-icon">🎾</span>
-                </div>
-                <div class="status" id="badminton-status">Click to update</div>
-                <div class="last-updated" id="badminton-time"></div>
-            </div>
+</div>
+</div>
 
-            <!-- Faculty Card -->
-            <div class="card" onclick="openModal('faculty')">
-                <div class="card-header">
-                    <span class="card-title">👨‍🏫 Faculty</span>
-                    <span class="card-icon">🎓</span>
-                </div>
-                <div class="status">Click to view availability</div>
-            </div>
-        </div>
-    </div>
+<div class="modal" id="modal">
+<div class="modal-content" id="modal-content"></div>
+</div>
 
-    <!-- Modal -->
-    <div class="modal" id="modal">
-        <div class="modal-content" id="modal-content">
-            <!-- Dynamic content will be inserted here -->
-        </div>
-    </div>
+<script>
 
-    <script>
-        const AUTO_EXPIRY_TIME = 30 * 60 * 1000; // 30 minutes
+// 🔥 Your Firebase Config
+var firebaseConfig = {
+  apiKey: "AIzaSyBeVAkgLuLzq6uYo6M5begEMi_jwi-nAoU",
+  authDomain: "fundbaseu-tracker.firebaseapp.com",
+  databaseURL: "https://fundbaseu-tracker-default-rtdb.firebaseio.com",
+  projectId: "fundbaseu-tracker",
+  storageBucket: "fundbaseu-tracker.firebasestorage.app",
+  messagingSenderId: "452144906894",
+  appId: "1:452144906894:web:0e5c211b4e2e309d5f7fdf"
+};
 
-        function resetAllData() {
-            if (confirm('Are you sure you want to reset all data? This will clear all statuses.')) {
-                localStorage.removeItem('campusData');
-                initStorage();
-                updateDisplay();
-                alert('All data has been reset!');
-            }
-        }
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
 
-        // Initialize storage
-        function initStorage() {
-            const defaultData = {
-                mess: { status: null, confirmations: 0, votes: [], lastUpdated: null, confirmed: false },
-                classrooms: {},
-                gym: { count: 0, reports: [], lastUpdated: null },
-                library: { count: 0, reports: [], lastUpdated: null },
-                nescafe: { status: null, lastUpdated: null },
-                nandini: { status: null, lastUpdated: null },
-                badminton: { occupied: 0, reports: [], lastUpdated: null },
-                faculty: {}
-            };
+function openModal(type){
+  var modal=document.getElementById('modal');
+  var content=document.getElementById('modal-content');
+  var html="";
 
-            for (let i = 1; i <= 9; i++) {
-                defaultData.classrooms['LH' + i] = { status: null, lastUpdated: null };
-            }
+  if(type==='mess'||type==='nescafe'||type==='nandini'){
+    html+=`<h3>Update ${type}</h3><div class='btn-group'>
+    <button onclick="updateStatus('${type}','open')">Open</button>
+    <button onclick="updateStatus('${type}','closed')">Closed</button>
+    </div>`;
+  }
 
-            const facultyList = ['Dr Bidur', 'Dr Megha', 'Dr Kasturi', 'Dr Moushmi', 'Dr Muzaffar', 
-                               'Dr Ishfaq', 'Dr Shameer', 'Dr Irfan', 'Dr Sushmita', 'Dr Asha', 
-                               'Dr Nageshwar', 'Dean'];
-            facultyList.forEach(function(name) {
-                defaultData.faculty[name] = { status: 'not-in-cabin', lastUpdated: Date.now() };
-            });
+  if(type==='gym'){
+    html+=`<h3>Update Gym Count</h3>
+    <input type='number' id='gymCount' placeholder='Enter number'>
+    <div class='btn-group'>
+    <button onclick="updateGym()">Submit</button>
+    </div>`;
+  }
 
-            localStorage.setItem('campusData', JSON.stringify(defaultData));
-        }
+  content.innerHTML=html;
+  modal.style.display='flex';
+}
 
-        function getData() {
-            const data = localStorage.getItem('campusData');
-            if (!data) {
-                initStorage();
-                return JSON.parse(localStorage.getItem('campusData'));
-            }
-            return JSON.parse(data);
-        }
+document.getElementById('modal').onclick=function(e){if(e.target.id==='modal')this.style.display='none'}
 
-        function saveData(data) {
-            localStorage.setItem('campusData', JSON.stringify(data));
-            updateDisplay();
-        }
+function updateStatus(place,status){
+  db.ref(place).set({status:status,timestamp:Date.now()});
+  document.getElementById('modal').style.display='none';
+}
 
-        function checkExpiry(timestamp) {
-            if (!timestamp) return true;
-            return Date.now() - timestamp > AUTO_EXPIRY_TIME;
-        }
+function updateGym(){
+  var val=parseInt(document.getElementById('gymCount').value);
+  if(isNaN(val))return alert("Enter valid number");
+  db.ref('gym').set({count:val,timestamp:Date.now()});
+  document.getElementById('modal').style.display='none';
+}
 
-        function getTimeSince(timestamp) {
-            if (!timestamp) return 'Never updated';
-            const minutes = Math.floor((Date.now() - timestamp) / 60000);
-            if (minutes < 1) return 'Just now';
-            if (minutes === 1) return '1 minute ago';
-            if (minutes < 60) return minutes + ' minutes ago';
-            const hours = Math.floor(minutes / 60);
-            if (hours === 1) return '1 hour ago';
-            return hours + ' hours ago';
-        }
+function listen(place,el){
+  db.ref(place).on('value',function(snap){
+    var data=snap.val();
+    if(!data){el.innerHTML="Not Updated";el.className='status orange';return;}
+    if(data.status==='open'){
+      el.innerHTML="Open ✓";el.className='status green';
+    }else if(data.status==='closed'){
+      el.innerHTML="Closed ✗";el.className='status red';
+    }else if(data.count!==undefined){
+      el.innerHTML=data.count+" people";el.className='status blue';
+    }
+  });
+}
 
-        function updateDisplay() {
-            const data = getData();
-            if (!data) return;
+listen('mess',document.getElementById('mess-status'));
+listen('nescafe',document.getElementById('nescafe-status'));
+listen('nandini',document.getElementById('nandini-status'));
+listen('gym',document.getElementById('gym-status'));
 
-            // Mess
-            const messEl = document.getElementById('mess-status');
-            const messTimeEl = document.getElementById('mess-time');
-            if (messEl && messTimeEl) {
-                if (!data.mess.confirmed || checkExpiry(data.mess.lastUpdated)) {
-                    messEl.textContent = 'Not Updated - Click to Update';
-                    messEl.className = 'status not-updated';
-                } else {
-                    messEl.textContent = data.mess.status === 'available' ? 'Food Available ✓' : 'Food Finished ✗';
-                    messEl.className = 'status ' + (data.mess.status === 'available' ? 'available' : 'finished');
-                }
-                messTimeEl.textContent = 'Updated ' + getTimeSince(data.mess.lastUpdated);
-            }
+</script>
 
-            // Gym
-            const gymEl = document.getElementById('gym-status');
-            const gymTimeEl = document.getElementById('gym-time');
-            if (gymEl && gymTimeEl) {
-                if (checkExpiry(data.gym.lastUpdated) || !data.gym.reports || data.gym.reports.length === 0) {
-                    gymEl.textContent = 'Not Updated - Click to Update';
-                    gymEl.className = 'status not-updated';
-                } else {
-                    const avgCount = Math.round(data.gym.reports.reduce(function(a, b) { return a + b; }, 0) / data.gym.reports.length);
-                    gymEl.textContent = avgCount + ' people';
-                    gymEl.className = 'status neutral';
-                }
-                gymTimeEl.textContent = 'Updated ' + getTimeSince(data.gym.lastUpdated);
-            }
-
-            // Library
-            const libraryEl = document.getElementById('library-status');
-            const libraryTimeEl = document.getElementById('library-time');
-            if (libraryEl && libraryTimeEl) {
-                if (checkExpiry(data.library.lastUpdated) || !data.library.reports || data.library.reports.length === 0) {
-                    libraryEl.textContent = 'Not Updated - Click to Update';
-                    libraryEl.className = 'status not-updated';
-                } else {
-                    const avgCount = Math.round(data.library.reports.reduce(function(a, b) { return a + b; }, 0) / data.library.reports.length);
-                    libraryEl.textContent = avgCount + ' people';
-                    libraryEl.className = 'status neutral';
-                }
-                libraryTimeEl.textContent = 'Updated ' + getTimeSince(data.library.lastUpdated);
-            }
-
-            // Nescafe
-            const nescafeEl = document.getElementById('nescafe-status');
-            const nescafeTimeEl = document.getElementById('nescafe-time');
-            if (nescafeEl && nescafeTimeEl) {
-                if (!data.nescafe || !data.nescafe.status || checkExpiry(data.nescafe.lastUpdated)) {
-                    nescafeEl.textContent = 'Not Updated - Click to Update';
-                    nescafeEl.className = 'status not-updated';
-                } else {
-                    nescafeEl.textContent = data.nescafe.status === 'open' ? 'Open ✓' : 'Closed ✗';
-                    nescafeEl.className = 'status ' + (data.nescafe.status === 'open' ? 'open' : 'closed');
-                }
-                nescafeTimeEl.textContent = 'Updated ' + getTimeSince(data.nescafe ? data.nescafe.lastUpdated : null);
-            }
-
-            // Nandini
-            const nandiniEl = document.getElementById('nandini-status');
-            const nandiniTimeEl = document.getElementById('nandini-time');
-            if (nandiniEl && nandiniTimeEl) {
-                if (!data.nandini || !data.nandini.status || checkExpiry(data.nandini.lastUpdated)) {
-                    nandiniEl.textContent = 'Not Updated - Click to Update';
-                    nandiniEl.className = 'status not-updated';
-                } else {
-                    nandiniEl.textContent = data.nandini.status === 'open' ? 'Open ✓' : 'Closed ✗';
-                    nandiniEl.className = 'status ' + (data.nandini.status === 'open' ? 'open' : 'closed');
-                }
-                nandiniTimeEl.textContent = 'Updated ' + getTimeSince(data.nandini ? data.nandini.lastUpdated : null);
-            }
-
-            // Badminton
-            const badmintonEl = document.getElementById('badminton-status');
-            const badmintonTimeEl = document.getElementById('badminton-time');
-            if (badmintonEl && badmintonTimeEl) {
-                if (checkExpiry(data.badminton.lastUpdated) || !data.badminton.reports || data.badminton.reports.length === 0) {
-                    badmintonEl.textContent = 'Not Updated - Click to Update';
-                    badmintonEl.className = 'status not-updated';
-                } else {
-                    const avgOccupied = Math.round(data.badminton.reports.reduce(function(a, b) { return a + b; }, 0) / data.badminton.reports.length);
-                    badmintonEl.textContent = avgOccupied + '/4 Courts Occupied';
-                    badmintonEl.className = 'status neutral';
-                }
-                badmintonTimeEl.textContent = 'Updated ' + getTimeSince(data.badminton.lastUpdated);
-            }
-        }
-
-        function openModal(type) {
-            const modal = document.getElementById('modal');
-            const content = document.getElementById('modal-content');
-            const data = getData();
-            if (!data) return;
-
-            let html = '';
-
-            if (type === 'mess') {
-                const needsConfirm = data.mess.confirmations < 3;
-                const currentVotes = data.mess.confirmations;
-                
-                html = '<div class="modal-header">🍽️ Mess Status</div>';
-                if (needsConfirm) {
-                    html += '<div class="confirmation-notice">Current votes: ' + currentVotes + '/3 - Needs ' + (3 - currentVotes) + ' more confirmation(s)</div>';
-                }
-                html += '<div class="button-group">';
-                html += '<button class="btn btn-available" onclick="updateStatus(\'mess\', \'available\')">Food Available</button>';
-                html += '<button class="btn btn-finished" onclick="updateStatus(\'mess\', \'finished\')">Food Finished</button>';
-                html += '</div>';
-                html += '<button class="btn btn-close" onclick="closeModal()">Close</button>';
-            } else if (type === 'classrooms') {
-                html = '<div class="modal-header">🏫 Classrooms</div><div class="sub-items">';
-                for (let i = 1; i <= 9; i++) {
-                    const room = 'LH' + i;
-                    const roomData = data.classrooms[room];
-                    const isExpired = checkExpiry(roomData.lastUpdated);
-                    
-                    let statusText, statusClass;
-                    if (!roomData.status || isExpired) {
-                        statusText = 'Not Updated';
-                        statusClass = 'not-updated';
-                    } else {
-                        statusText = roomData.status === 'occupied' ? 'Occupied' : 'Free';
-                        statusClass = roomData.status === 'occupied' ? 'occupied' : 'free';
-                    }
-                    
-                    html += '<div class="sub-item" onclick="updateClassroom(\'' + room + '\')">';
-                    html += '<span class="sub-item-name">' + room + '</span>';
-                    html += '<span class="status ' + statusClass + '">' + statusText + '</span>';
-                    html += '</div>';
-                }
-                html += '</div><button class="btn btn-close" onclick="closeModal()">Close</button>';
-            } else if (type === 'gym') {
-                html = '<div class="modal-header">🏋️ Gym Crowd Status</div>';
-                html += '<div class="input-group">';
-                html += '<label>How many people are in the gym?</label>';
-                html += '<input type="number" id="gym-count" min="0" placeholder="Enter headcount">';
-                html += '</div>';
-                html += '<button class="btn btn-available" onclick="updateGymCount()">Submit Count</button>';
-                html += '<button class="btn btn-close" onclick="closeModal()">Close</button>';
-            } else if (type === 'library') {
-                html = '<div class="modal-header">📚 Library</div>';
-                html += '<div class="input-group">';
-                html += '<label>Number of people in library (as seen by occupied bag storage area):</label>';
-                html += '<input type="number" id="library-count" min="0" placeholder="Enter count based on bags">';
-                html += '</div>';
-                html += '<button class="btn btn-available" onclick="updateLibraryCount()">Submit Count</button>';
-                html += '<button class="btn btn-close" onclick="closeModal()">Close</button>';
-            } else if (type === 'nescafe') {
-                html = '<div class="modal-header">☕ Nescafe Status</div>';
-                html += '<div class="button-group">';
-                html += '<button class="btn btn-open" onclick="updateShopStatus(\'nescafe\', \'open\')">Open</button>';
-                html += '<button class="btn btn-closed" onclick="updateShopStatus(\'nescafe\', \'closed\')">Closed</button>';
-                html += '</div>';
-                html += '<button class="btn btn-close" onclick="closeModal()">Close</button>';
-            } else if (type === 'nandini') {
-                html = '<div class="modal-header">🥛 Nandini Status</div>';
-                html += '<div class="button-group">';
-                html += '<button class="btn btn-open" onclick="updateShopStatus(\'nandini\', \'open\')">Open</button>';
-                html += '<button class="btn btn-closed" onclick="updateShopStatus(\'nandini\', \'closed\')">Closed</button>';
-                html += '</div>';
-                html += '<button class="btn btn-close" onclick="closeModal()">Close</button>';
-            } else if (type === 'badminton') {
-                html = '<div class="modal-header">🏸 Badminton Courts</div>';
-                html += '<div class="input-group">';
-                html += '<label>How many courts are occupied? (0-4)</label>';
-                html += '<input type="number" id="badminton-count" min="0" max="4" placeholder="Enter number">';
-                html += '</div>';
-                html += '<button class="btn btn-available" onclick="updateBadmintonCount()">Submit Count</button>';
-                html += '<button class="btn btn-close" onclick="closeModal()">Close</button>';
-            } else if (type === 'faculty') {
-                html = '<div class="modal-header">👨‍🏫 Faculty Availability</div><div class="sub-items">';
-                Object.keys(data.faculty).forEach(function(name) {
-                    const fac = data.faculty[name];
-                    const statusMap = { 'in-cabin': 'In Cabin', 'not-in-cabin': 'Not in Cabin' };
-                    html += '<div class="sub-item" onclick="updateFaculty(\'' + name + '\')">';
-                    html += '<span class="sub-item-name">' + name + '</span>';
-                    html += '<span class="status ' + fac.status + '">' + statusMap[fac.status] + '</span>';
-                    html += '</div>';
-                });
-                html += '</div><button class="btn btn-close" onclick="closeModal()">Close</button>';
-            }
-
-            content.innerHTML = html;
-            modal.classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
-
-        function updateStatus(type, status) {
-            const data = getData();
-            const threshold = 3;
-            
-            if (!data[type].votes) data[type].votes = [];
-            if (data[type].votes.includes(status)) {
-                data[type].confirmations++;
-            } else {
-                data[type].votes = [status];
-                data[type].confirmations = 1;
-            }
-
-            if (data[type].confirmations >= threshold) {
-                data[type].status = status;
-                data[type].confirmations = 0;
-                data[type].votes = [];
-                data[type].lastUpdated = Date.now();
-                data[type].confirmed = true;
-                alert('Status updated successfully!');
-            } else {
-                alert('Vote recorded! Need ' + (threshold - data[type].confirmations) + ' more confirmation(s)');
-            }
-
-            saveData(data);
-            closeModal();
-        }
-
-        function updateClassroom(room) {
-            const data = getData();
-            const roomData = data.classrooms[room];
-            
-            const choice = prompt('Update ' + room + ' status:\n1. Occupied\n2. Free\n\nEnter 1 or 2:');
-            
-            if (choice !== '1' && choice !== '2') {
-                alert('Invalid choice');
-                return;
-            }
-            
-            roomData.status = choice === '1' ? 'occupied' : 'free';
-            roomData.lastUpdated = Date.now();
-            
-            saveData(data);
-            alert(room + ' status updated!');
-            openModal('classrooms');
-        }
-
-        function updateGymCount() {
-            const count = parseInt(document.getElementById('gym-count').value);
-            if (isNaN(count) || count < 0) {
-                alert('Please enter a valid number');
-                return;
-            }
-
-            const data = getData();
-            if (!data.gym.reports) data.gym.reports = [];
-            data.gym.reports.push(count);
-            if (data.gym.reports.length > 3) data.gym.reports.shift();
-            data.gym.lastUpdated = Date.now();
-            
-            saveData(data);
-            alert('Gym count updated!');
-            closeModal();
-        }
-
-        function updateLibraryCount() {
-            const count = parseInt(document.getElementById('library-count').value);
-            if (isNaN(count) || count < 0) {
-                alert('Please enter a valid number');
-                return;
-            }
-
-            const data = getData();
-            if (!data.library.reports) data.library.reports = [];
-            data.library.reports.push(count);
-            if (data.library.reports.length > 3) data.library.reports.shift();
-            data.library.lastUpdated = Date.now();
-            
-            saveData(data);
-            alert('Library count updated!');
-            closeModal();
-        }
-
-        function updateShopStatus(shop, status) {
-            const data = getData();
-            if (!data[shop]) data[shop] = {};
-            data[shop].status = status;
-            data[shop].lastUpdated = Date.now();
-            
-            saveData(data);
-            alert((shop === 'nescafe' ? 'Nescafe' : 'Nandini') + ' status updated to ' + (status === 'open' ? 'Open' : 'Closed') + '!');
-            closeModal();
-        }
-
-        function updateBadmintonCount() {
-            const count = parseInt(document.getElementById('badminton-count').value);
-            if (isNaN(count) || count < 0 || count > 4) {
-                alert('Please enter a number between 0 and 4');
-                return;
-            }
-
-            const data = getData();
-            if (!data.badminton.reports) data.badminton.reports = [];
-            data.badminton.reports.push(count);
-            if (data.badminton.reports.length > 3) data.badminton.reports.shift();
-            data.badminton.lastUpdated = Date.now();
-            
-            saveData(data);
-            alert('Badminton court count updated!');
-            closeModal();
-        }
-
-        function updateFaculty(name) {
-            const newStatus = prompt('Update status for ' + name + ':\n1. In Cabin\n2. Not in Cabin\n\nEnter 1 or 2:');
-            const statusMap = { '1': 'in-cabin', '2': 'not-in-cabin' };
-            
-            if (!statusMap[newStatus]) {
-                alert('Invalid choice');
-                return;
-            }
-
-            const data = getData();
-            data.faculty[name].status = statusMap[newStatus];
-            data.faculty[name].lastUpdated = Date.now();
-            
-            saveData(data);
-            alert('Faculty status updated!');
-            openModal('faculty');
-        }
-
-        window.addEventListener('DOMContentLoaded', function() {
-            if (!localStorage.getItem('campusData')) {
-                initStorage();
-            }
-            updateDisplay();
-            setInterval(updateDisplay, 30000);
-        });
-
-        document.getElementById('modal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-    </script>
 </body>
 </html>
