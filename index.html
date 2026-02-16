@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Monitor Dashboard</title>
+    <title>FundBASEU Tracker</title>
     <style>
         * {
             margin: 0;
@@ -13,9 +13,22 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
             min-height: 100vh;
             padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('campus.png') center/cover no-repeat;
+            opacity: 0.2;
+            z-index: -1;
         }
 
         .container {
@@ -30,14 +43,17 @@
         }
 
         header h1 {
-            font-size: 2.5em;
+            font-size: 2.8em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            font-weight: 800;
+            letter-spacing: 1px;
         }
 
         header p {
-            font-size: 1.1em;
-            opacity: 0.9;
+            font-size: 1.2em;
+            opacity: 0.95;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
         }
 
         .grid {
@@ -48,17 +64,19 @@
         }
 
         .card {
-            background: white;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
         }
 
         .card-header {
@@ -177,6 +195,12 @@
             transform: scale(1.05);
         }
 
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-available {
             background: #10b981;
             color: white;
@@ -253,6 +277,16 @@
             color: #92400e;
         }
 
+        .vote-notice {
+            background: #dbeafe;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 0.9em;
+            color: #1e40af;
+        }
+
         .input-group {
             margin: 20px 0;
         }
@@ -300,7 +334,7 @@
 
         @media (max-width: 768px) {
             header h1 {
-                font-size: 1.8em;
+                font-size: 2em;
             }
 
             .grid {
@@ -316,7 +350,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎓 Campus Monitor Dashboard</h1>
+            <h1>🎓 FundBASEU Tracker</h1>
             <p>Real-time campus status updates by students, for students</p>
         </header>
 
@@ -398,6 +432,49 @@
 
     <script>
         const AUTO_EXPIRY_TIME = 30 * 60 * 1000; // 30 minutes
+        const VOTE_COOLDOWN = 5 * 60 * 1000; // 5 minutes cooldown per location
+
+        // Generate unique user ID
+        function getUserId() {
+            let userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('userId', userId);
+            }
+            return userId;
+        }
+
+        // Check if user can vote
+        function canUserVote(location) {
+            const userId = getUserId();
+            const voteKey = `vote_${location}_${userId}`;
+            const lastVote = localStorage.getItem(voteKey);
+            
+            if (!lastVote) return true;
+            
+            const timeSinceVote = Date.now() - parseInt(lastVote);
+            return timeSinceVote > VOTE_COOLDOWN;
+        }
+
+        // Record user vote
+        function recordVote(location) {
+            const userId = getUserId();
+            const voteKey = `vote_${location}_${userId}`;
+            localStorage.setItem(voteKey, Date.now().toString());
+        }
+
+        // Get time until can vote again
+        function getVoteCooldownRemaining(location) {
+            const userId = getUserId();
+            const voteKey = `vote_${location}_${userId}`;
+            const lastVote = localStorage.getItem(voteKey);
+            
+            if (!lastVote) return 0;
+            
+            const timeSinceVote = Date.now() - parseInt(lastVote);
+            const remaining = VOTE_COOLDOWN - timeSinceVote;
+            return remaining > 0 ? Math.ceil(remaining / 60000) : 0; // Return minutes
+        }
 
         // Initialize storage
         function initStorage() {
@@ -525,299 +602,8 @@
             if (type === 'mess') {
                 const needsConfirm = data.mess.confirmations < 3;
                 const currentVotes = data.mess.confirmations;
+                const canVote = canUserVote('mess');
+                const cooldownMins = getVoteCooldownRemaining('mess');
+                
                 html = `
                     <div class="modal-header">🍽️ Mess Status</div>
-                    ${needsConfirm ? `<div class="confirmation-notice">Current votes: ${currentVotes}/3 - Needs ${3 - currentVotes} more confirmation(s)</div>` : ''}
-                    <div class="button-group">
-                        <button class="btn btn-available" onclick="updateStatus('mess', 'available')">Food Available</button>
-                        <button class="btn btn-finished" onclick="updateStatus('mess', 'finished')">Food Finished</button>
-                    </div>
-                    <button class="btn btn-close" onclick="closeModal()">Close</button>
-                `;
-            } else if (type === 'classrooms') {
-                html = '<div class="modal-header">🏫 Classrooms</div><div class="sub-items">';
-                for (let i = 1; i <= 9; i++) {
-                    const room = `LH${i}`;
-                    const roomData = data.classrooms[room];
-                    const isExpired = checkExpiry(roomData.lastUpdated);
-                    const isConfirmed = roomData.confirmed;
-                    
-                    let statusText, statusClass;
-                    if (!isConfirmed || isExpired) {
-                        statusText = 'Not Updated';
-                        statusClass = 'not-updated';
-                    } else {
-                        statusText = roomData.status === 'occupied' ? 'Occupied' : 'Free';
-                        statusClass = roomData.status === 'occupied' ? 'occupied' : 'free';
-                    }
-                    
-                    html += `
-                        <div class="sub-item" onclick="updateClassroom('${room}')">
-                            <span class="sub-item-name">${room}</span>
-                            <span class="status ${statusClass}">${statusText}</span>
-                        </div>
-                    `;
-                }
-                html += '</div><button class="btn btn-close" onclick="closeModal()">Close</button>';
-            } else if (type === 'gym') {
-                html = `
-                    <div class="modal-header">🏋️ Gym Crowd Status</div>
-                    <div class="input-group">
-                        <label>How many people are in the gym?</label>
-                        <input type="number" id="gym-count" min="0" placeholder="Enter headcount">
-                    </div>
-                    <button class="btn btn-available" onclick="updateGymCount()">Submit Count</button>
-                    <button class="btn btn-close" onclick="closeModal()">Close</button>
-                `;
-            } else if (type === 'library') {
-                html = '<div class="modal-header">📚 Library</div><div class="sub-items">';
-                ['ground', 'first'].forEach(floor => {
-                    const floorData = data.library[floor];
-                    const avgCount = floorData.reports.length > 0 ? Math.round(floorData.reports.reduce((a, b) => a + b, 0) / floorData.reports.length) : 0;
-                    const isExpired = checkExpiry(floorData.lastUpdated);
-                    const hasData = floorData.reports.length > 0;
-                    
-                    let status, statusClass, displayText;
-                    if (!hasData || isExpired) {
-                        status = 'Not Updated';
-                        statusClass = 'not-updated';
-                        displayText = 'Not Updated';
-                    } else {
-                        status = avgCount <= 10 ? 'Empty' : avgCount <= 30 ? 'Moderate' : 'Crowded';
-                        statusClass = avgCount <= 10 ? 'empty' : avgCount <= 30 ? 'moderate' : 'crowded';
-                        displayText = `${status} (${avgCount})`;
-                    }
-                    
-                    html += `
-                        <div class="sub-item" onclick="updateLibraryFloor('${floor}')">
-                            <span class="sub-item-name">${floor === 'ground' ? 'Ground Floor' : 'First Floor'}</span>
-                            <span class="status ${statusClass}">${displayText}</span>
-                        </div>
-                    `;
-                });
-                html += '</div><button class="btn btn-close" onclick="closeModal()">Close</button>';
-            } else if (type === 'studentcentre') {
-                html = '<div class="modal-header">☕ Student Centre</div><div class="sub-items">';
-                ['nescafe', 'nandini'].forEach(shop => {
-                    const shopData = data.studentcentre[shop];
-                    const isExpired = checkExpiry(shopData.lastUpdated);
-                    const isConfirmed = shopData.confirmed;
-                    
-                    let statusText, statusClass;
-                    if (!isConfirmed || isExpired) {
-                        statusText = 'Not Updated';
-                        statusClass = 'not-updated';
-                    } else {
-                        statusText = shopData.status === 'open' ? 'Open' : 'Closed';
-                        statusClass = shopData.status === 'open' ? 'open' : 'closed';
-                    }
-                    
-                    html += `
-                        <div class="sub-item" onclick="updateStudentCentre('${shop}')">
-                            <span class="sub-item-name">${shop === 'nescafe' ? 'Nescafe' : 'Nandini'}</span>
-                            <span class="status ${statusClass}">${statusText}</span>
-                        </div>
-                    `;
-                });
-                html += '</div><button class="btn btn-close" onclick="closeModal()">Close</button>';
-            } else if (type === 'badminton') {
-                html = `
-                    <div class="modal-header">🏸 Badminton Courts</div>
-                    <div class="input-group">
-                        <label>How many courts are occupied? (0-4)</label>
-                        <input type="number" id="badminton-count" min="0" max="4" placeholder="Enter number">
-                    </div>
-                    <button class="btn btn-available" onclick="updateBadmintonCount()">Submit Count</button>
-                    <button class="btn btn-close" onclick="closeModal()">Close</button>
-                `;
-            } else if (type === 'faculty') {
-                html = '<div class="modal-header">👨‍🏫 Faculty Availability</div><div class="sub-items">';
-                Object.keys(data.faculty).forEach(name => {
-                    const fac = data.faculty[name];
-                    const statusMap = { available: 'Available', 'in-class': 'In Class', 'in-meeting': 'In Meeting', out: 'Out of Office' };
-                    html += `
-                        <div class="sub-item" onclick="updateFaculty('${name}')">
-                            <span class="sub-item-name">${name}</span>
-                            <span class="status ${fac.status}">${statusMap[fac.status]}</span>
-                        </div>
-                    `;
-                });
-                html += '</div><button class="btn btn-close" onclick="closeModal()">Close</button>';
-            }
-
-            content.innerHTML = html;
-            modal.classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
-
-        function updateStatus(type, status) {
-            const data = getData();
-            const threshold = 3;
-            
-            if (!data[type].votes) data[type].votes = [];
-            if (data[type].votes.includes(status)) {
-                data[type].confirmations++;
-            } else {
-                data[type].votes = [status];
-                data[type].confirmations = 1;
-            }
-
-            if (data[type].confirmations >= threshold) {
-                data[type].status = status;
-                data[type].confirmations = 0;
-                data[type].votes = [];
-                data[type].lastUpdated = Date.now();
-                data[type].confirmed = true;
-                alert('Status updated successfully!');
-            } else {
-                alert(`Vote recorded! Need ${threshold - data[type].confirmations} more confirmation(s)`);
-            }
-
-            saveData(data);
-            closeModal();
-        }
-
-        function updateClassroom(room) {
-            const data = getData();
-            const roomData = data.classrooms[room];
-            const newStatus = roomData.status === 'occupied' ? 'free' : 'occupied';
-            
-            if (!roomData.votes) roomData.votes = [];
-            if (roomData.votes.includes(newStatus)) {
-                roomData.confirmations++;
-            } else {
-                roomData.votes = [newStatus];
-                roomData.confirmations = 1;
-            }
-
-            if (roomData.confirmations >= 3) {
-                roomData.status = newStatus;
-                roomData.confirmations = 0;
-                roomData.votes = [];
-                roomData.lastUpdated = Date.now();
-                roomData.confirmed = true;
-                alert(`${room} status updated to ${newStatus}!`);
-            } else {
-                alert(`Vote recorded for ${room}! Need ${3 - roomData.confirmations} more confirmation(s)`);
-            }
-
-            saveData(data);
-            openModal('classrooms');
-        }
-
-        function updateGymCount() {
-            const count = parseInt(document.getElementById('gym-count').value);
-            if (isNaN(count) || count < 0) {
-                alert('Please enter a valid number');
-                return;
-            }
-
-            const data = getData();
-            data.gym.reports.push(count);
-            if (data.gym.reports.length > 3) data.gym.reports.shift();
-            data.gym.lastUpdated = Date.now();
-            
-            saveData(data);
-            alert('Gym count updated!');
-            closeModal();
-        }
-
-        function updateLibraryFloor(floor) {
-            const count = prompt(`How many people are on the ${floor === 'ground' ? 'Ground' : 'First'} Floor?`);
-            const num = parseInt(count);
-            
-            if (isNaN(num) || num < 0) {
-                alert('Please enter a valid number');
-                return;
-            }
-
-            const data = getData();
-            data.library[floor].reports.push(num);
-            if (data.library[floor].reports.length > 3) data.library[floor].reports.shift();
-            data.library[floor].lastUpdated = Date.now();
-            
-            saveData(data);
-            alert('Library floor count updated!');
-            openModal('library');
-        }
-
-        function updateStudentCentre(shop) {
-            const data = getData();
-            const shopData = data.studentcentre[shop];
-            const newStatus = shopData.status === 'open' ? 'closed' : 'open';
-            
-            if (!shopData.votes) shopData.votes = [];
-            if (shopData.votes.includes(newStatus)) {
-                shopData.confirmations++;
-            } else {
-                shopData.votes = [newStatus];
-                shopData.confirmations = 1;
-            }
-
-            if (shopData.confirmations >= 2) {
-                shopData.status = newStatus;
-                shopData.confirmations = 0;
-                shopData.votes = [];
-                shopData.lastUpdated = Date.now();
-                shopData.confirmed = true;
-                alert(`${shop === 'nescafe' ? 'Nescafe' : 'Nandini'} status updated!`);
-            } else {
-                alert(`Vote recorded! Need ${2 - shopData.confirmations} more confirmation(s)`);
-            }
-
-            saveData(data);
-            openModal('studentcentre');
-        }
-
-        function updateBadmintonCount() {
-            const count = parseInt(document.getElementById('badminton-count').value);
-            if (isNaN(count) || count < 0 || count > 4) {
-                alert('Please enter a number between 0 and 4');
-                return;
-            }
-
-            const data = getData();
-            data.badminton.reports.push(count);
-            if (data.badminton.reports.length > 3) data.badminton.reports.shift();
-            data.badminton.lastUpdated = Date.now();
-            
-            saveData(data);
-            alert('Badminton court count updated!');
-            closeModal();
-        }
-
-        function updateFaculty(name) {
-            const newStatus = prompt(`Update status for ${name}:\n1. Available\n2. In Class\n3. In Meeting\n4. Out of Office\n\nEnter 1-4:`);
-            const statusMap = { '1': 'available', '2': 'in-class', '3': 'in-meeting', '4': 'out' };
-            
-            if (!statusMap[newStatus]) {
-                alert('Invalid choice');
-                return;
-            }
-
-            const data = getData();
-            data.faculty[name].status = statusMap[newStatus];
-            data.faculty[name].lastUpdated = Date.now();
-            
-            saveData(data);
-            alert('Faculty status updated!');
-            openModal('faculty');
-        }
-
-        // Initialize on page load
-        window.addEventListener('DOMContentLoaded', function() {
-            initStorage();
-            updateDisplay();
-            setInterval(updateDisplay, 30000); // Update every 30 seconds
-        });
-
-        // Close modal when clicking outside
-        document.getElementById('modal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-    </script>
-</body>
-</html>
