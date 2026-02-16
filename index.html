@@ -562,7 +562,7 @@
                     nescafeEl.textContent = 'Not Updated - Click to Update';
                     nescafeEl.className = 'status not-updated';
                 } else {
-                    nescafeEl.textContent = data.nescafe.status === 'open' ? 'Open' : 'Closed';
+                    nescafeEl.textContent = data.nescafe.status === 'open' ? 'Open ✓' : 'Closed ✗';
                     nescafeEl.className = 'status ' + (data.nescafe.status === 'open' ? 'open' : 'closed');
                 }
                 nescafeTimeEl.textContent = 'Updated ' + getTimeSince(data.nescafe.lastUpdated);
@@ -576,7 +576,7 @@
                     nandiniEl.textContent = 'Not Updated - Click to Update';
                     nandiniEl.className = 'status not-updated';
                 } else {
-                    nandiniEl.textContent = data.nandini.status === 'open' ? 'Open' : 'Closed';
+                    nandiniEl.textContent = data.nandini.status === 'open' ? 'Open ✓' : 'Closed ✗';
                     nandiniEl.className = 'status ' + (data.nandini.status === 'open' ? 'open' : 'closed');
                 }
                 nandiniTimeEl.textContent = 'Updated ' + getTimeSince(data.nandini.lastUpdated);
@@ -786,7 +786,7 @@
             data[shop].lastUpdated = Date.now();
             
             saveData(data);
-            alert((shop === 'nescafe' ? 'Nescafe' : 'Nandini') + ' status updated!');
+            alert((shop === 'nescafe' ? 'Nescafe' : 'Nandini') + ' status updated to ' + (status === 'open' ? 'Open' : 'Closed') + '!');
             closeModal();
         }
 
