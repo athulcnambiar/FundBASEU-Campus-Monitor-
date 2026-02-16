@@ -273,16 +273,6 @@
             font-size: 0.9em;
         }
 
-        .vote-notice {
-            background: #dbeafe;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
-            text-align: center;
-            font-size: 0.85em;
-            color: #1e40af;
-        }
-
         .input-group {
             margin: 20px 0;
         }
@@ -476,49 +466,6 @@
 
     <script>
         const AUTO_EXPIRY_TIME = 30 * 60 * 1000; // 30 minutes
-        const VOTE_COOLDOWN = 5 * 60 * 1000; // 5 minutes cooldown per location
-
-        // Generate unique user ID
-        function getUserId() {
-            let userId = localStorage.getItem('userId');
-            if (!userId) {
-                userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('userId', userId);
-            }
-            return userId;
-        }
-
-        // Check if user can vote
-        function canUserVote(location) {
-            const userId = getUserId();
-            const voteKey = 'vote_' + location + '_' + userId;
-            const lastVote = localStorage.getItem(voteKey);
-            
-            if (!lastVote) return true;
-            
-            const timeSinceVote = Date.now() - parseInt(lastVote);
-            return timeSinceVote > VOTE_COOLDOWN;
-        }
-
-        // Record user vote
-        function recordVote(location) {
-            const userId = getUserId();
-            const voteKey = 'vote_' + location + '_' + userId;
-            localStorage.setItem(voteKey, Date.now().toString());
-        }
-
-        // Get time until can vote again
-        function getVoteCooldownRemaining(location) {
-            const userId = getUserId();
-            const voteKey = 'vote_' + location + '_' + userId;
-            const lastVote = localStorage.getItem(voteKey);
-            
-            if (!lastVote) return 0;
-            
-            const timeSinceVote = Date.now() - parseInt(lastVote);
-            const remaining = VOTE_COOLDOWN - timeSinceVote;
-            return remaining > 0 ? Math.ceil(remaining / 60000) : 0;
-        }
 
         // Initialize storage
         function initStorage() {
@@ -535,15 +482,15 @@
                     first: { count: 0, reports: [], lastUpdated: null }
                 },
                 studentcentre: {
-                    nescafe: { status: null, confirmations: 0, votes: [], lastUpdated: null, confirmed: false },
-                    nandini: { status: null, confirmations: 0, votes: [], lastUpdated: null, confirmed: false }
+                    nescafe: { status: null, lastUpdated: null },
+                    nandini: { status: null, lastUpdated: null }
                 },
                 badminton: { occupied: 0, reports: [], lastUpdated: null },
                 faculty: {}
             };
 
             for (let i = 1; i <= 9; i++) {
-                defaultData.classrooms['LH' + i] = { status: null, confirmations: 0, votes: [], lastUpdated: null, confirmed: false };
+                defaultData.classrooms['LH' + i] = { status: null, lastUpdated: null };
             }
 
             const facultyList = ['Dr Bidur', 'Dr Megha', 'Dr Kasturi', 'Dr Moushmi', 'Dr Muzaffar', 
@@ -644,19 +591,14 @@
             if (type === 'mess') {
                 const needsConfirm = data.mess.confirmations < 3;
                 const currentVotes = data.mess.confirmations;
-                const canVote = canUserVote('mess');
-                const cooldownMins = getVoteCooldownRemaining('mess');
                 
                 html = '<div class="modal-header">🍽️ Mess Status</div>';
                 if (needsConfirm) {
                     html += '<div class="confirmation-notice">Current votes: ' + currentVotes + '/3 - Needs ' + (3 - currentVotes) + ' more confirmation(s)</div>';
                 }
-                if (!canVote) {
-                    html += '<div class="vote-notice">⏳ You can vote again in ' + cooldownMins + ' minute(s)</div>';
-                }
                 html += '<div class="button-group">';
-                html += '<button class="btn btn-available" onclick="updateStatus(\'mess\', \'available\')" ' + (!canVote ? 'disabled' : '') + '>Food Available</button>';
-                html += '<button class="btn btn-finished" onclick="updateStatus(\'mess\', \'finished\')" ' + (!canVote ? 'disabled' : '') + '>Food Finished</button>';
+                html += '<button class="btn btn-available" onclick="updateStatus(\'mess\', \'available\')">Food Available</button>';
+                html += '<button class="btn btn-finished" onclick="updateStatus(\'mess\', \'finished\')">Food Finished</button>';
                 html += '</div>';
                 html += '<button class="btn btn-close" onclick="closeModal()">Close</button>';
             } else if (type === 'classrooms') {
@@ -665,10 +607,9 @@
                     const room = 'LH' + i;
                     const roomData = data.classrooms[room];
                     const isExpired = checkExpiry(roomData.lastUpdated);
-                    const isConfirmed = roomData.confirmed;
                     
                     let statusText, statusClass;
-                    if (!isConfirmed || isExpired) {
+                    if (!roomData.status || isExpired) {
                         statusText = 'Not Updated';
                         statusClass = 'not-updated';
                     } else {
@@ -683,18 +624,12 @@
                 }
                 html += '</div><button class="btn btn-close" onclick="closeModal()">Close</button>';
             } else if (type === 'gym') {
-                const canVote = canUserVote('gym');
-                const cooldownMins = getVoteCooldownRemaining('gym');
-                
                 html = '<div class="modal-header">🏋️ Gym Crowd Status</div>';
-                if (!canVote) {
-                    html += '<div class="vote-notice">⏳ You can update again in ' + cooldownMins + ' minute(s)</div>';
-                }
                 html += '<div class="input-group">';
                 html += '<label>How many people are in the gym?</label>';
-                html += '<input type="number" id="gym-count" min="0" placeholder="Enter headcount" ' + (!canVote ? 'disabled' : '') + '>';
+                html += '<input type="number" id="gym-count" min="0" placeholder="Enter headcount">';
                 html += '</div>';
-                html += '<button class="btn btn-available" onclick="updateGymCount()" ' + (!canVote ? 'disabled' : '') + '>Submit Count</button>';
+                html += '<button class="btn btn-available" onclick="updateGymCount()">Submit Count</button>';
                 html += '<button class="btn btn-close" onclick="closeModal()">Close</button>';
             } else if (type === 'library') {
                 html = '<div class="modal-header">📚 Library</div><div class="sub-items">';
@@ -726,10 +661,9 @@
                 ['nescafe', 'nandini'].forEach(function(shop) {
                     const shopData = data.studentcentre[shop];
                     const isExpired = checkExpiry(shopData.lastUpdated);
-                    const isConfirmed = shopData.confirmed;
                     
                     let statusText, statusClass;
-                    if (!isConfirmed || isExpired) {
+                    if (!shopData.status || isExpired) {
                         statusText = 'Not Updated';
                         statusClass = 'not-updated';
                     } else {
@@ -744,18 +678,12 @@
                 });
                 html += '</div><button class="btn btn-close" onclick="closeModal()">Close</button>';
             } else if (type === 'badminton') {
-                const canVote = canUserVote('badminton');
-                const cooldownMins = getVoteCooldownRemaining('badminton');
-                
                 html = '<div class="modal-header">🏸 Badminton Courts</div>';
-                if (!canVote) {
-                    html += '<div class="vote-notice">⏳ You can update again in ' + cooldownMins + ' minute(s)</div>';
-                }
                 html += '<div class="input-group">';
                 html += '<label>How many courts are occupied? (0-4)</label>';
-                html += '<input type="number" id="badminton-count" min="0" max="4" placeholder="Enter number" ' + (!canVote ? 'disabled' : '') + '>';
+                html += '<input type="number" id="badminton-count" min="0" max="4" placeholder="Enter number">';
                 html += '</div>';
-                html += '<button class="btn btn-available" onclick="updateBadmintonCount()" ' + (!canVote ? 'disabled' : '') + '>Submit Count</button>';
+                html += '<button class="btn btn-available" onclick="updateBadmintonCount()">Submit Count</button>';
                 html += '<button class="btn btn-close" onclick="closeModal()">Close</button>';
             } else if (type === 'faculty') {
                 html = '<div class="modal-header">👨‍🏫 Faculty Availability</div><div class="sub-items">';
@@ -779,12 +707,6 @@
         }
 
         function updateStatus(type, status) {
-            if (!canUserVote(type)) {
-                const mins = getVoteCooldownRemaining(type);
-                alert('Please wait ' + mins + ' minute(s) before voting again.');
-                return;
-            }
-
             const data = getData();
             const threshold = 3;
             
@@ -802,10 +724,8 @@
                 data[type].votes = [];
                 data[type].lastUpdated = Date.now();
                 data[type].confirmed = true;
-                recordVote(type);
                 alert('Status updated successfully!');
             } else {
-                recordVote(type);
                 alert('Vote recorded! Need ' + (threshold - data[type].confirmations) + ' more confirmation(s)');
             }
 
@@ -814,49 +734,25 @@
         }
 
         function updateClassroom(room) {
-            const locationKey = 'classroom_' + room;
-            if (!canUserVote(locationKey)) {
-                const mins = getVoteCooldownRemaining(locationKey);
-                alert('Please wait ' + mins + ' minute(s) before voting again for this classroom.');
-                return;
-            }
-
             const data = getData();
             const roomData = data.classrooms[room];
-            const newStatus = roomData.status === 'occupied' ? 'free' : 'occupied';
             
-            if (!roomData.votes) roomData.votes = [];
-            if (roomData.votes.includes(newStatus)) {
-                roomData.confirmations++;
-            } else {
-                roomData.votes = [newStatus];
-                roomData.confirmations = 1;
+            const choice = prompt('Update ' + room + ' status:\n1. Occupied\n2. Free\n\nEnter 1 or 2:');
+            
+            if (choice !== '1' && choice !== '2') {
+                alert('Invalid choice');
+                return;
             }
-
-            if (roomData.confirmations >= 3) {
-                roomData.status = newStatus;
-                roomData.confirmations = 0;
-                roomData.votes = [];
-                roomData.lastUpdated = Date.now();
-                roomData.confirmed = true;
-                recordVote(locationKey);
-                alert(room + ' status updated to ' + newStatus + '!');
-            } else {
-                recordVote(locationKey);
-                alert('Vote recorded for ' + room + '! Need ' + (3 - roomData.confirmations) + ' more confirmation(s)');
-            }
-
+            
+            roomData.status = choice === '1' ? 'occupied' : 'free';
+            roomData.lastUpdated = Date.now();
+            
             saveData(data);
+            alert(room + ' status updated!');
             openModal('classrooms');
         }
 
         function updateGymCount() {
-            if (!canUserVote('gym')) {
-                const mins = getVoteCooldownRemaining('gym');
-                alert('Please wait ' + mins + ' minute(s) before updating again.');
-                return;
-            }
-
             const count = parseInt(document.getElementById('gym-count').value);
             if (isNaN(count) || count < 0) {
                 alert('Please enter a valid number');
@@ -868,20 +764,12 @@
             if (data.gym.reports.length > 3) data.gym.reports.shift();
             data.gym.lastUpdated = Date.now();
             
-            recordVote('gym');
             saveData(data);
             alert('Gym count updated!');
             closeModal();
         }
 
         function updateLibraryFloor(floor) {
-            const locationKey = 'library_' + floor;
-            if (!canUserVote(locationKey)) {
-                const mins = getVoteCooldownRemaining(locationKey);
-                alert('Please wait ' + mins + ' minute(s) before updating again.');
-                return;
-            }
-
             const count = prompt('How many people are on the ' + (floor === 'ground' ? 'Ground' : 'First') + ' Floor?');
             const num = parseInt(count);
             
@@ -895,20 +783,12 @@
             if (data.library[floor].reports.length > 3) data.library[floor].reports.shift();
             data.library[floor].lastUpdated = Date.now();
             
-            recordVote(locationKey);
             saveData(data);
             alert('Library floor count updated!');
             openModal('library');
         }
 
         function updateStudentCentre(shop) {
-            const locationKey = 'studentcentre_' + shop;
-            if (!canUserVote(locationKey)) {
-                const mins = getVoteCooldownRemaining(locationKey);
-                alert('Please wait ' + mins + ' minute(s) before voting again.');
-                return;
-            }
-
             const data = getData();
             const shopData = data.studentcentre[shop];
             
@@ -919,40 +799,15 @@
                 return;
             }
             
-            const newStatus = choice === '1' ? 'open' : 'closed';
+            shopData.status = choice === '1' ? 'open' : 'closed';
+            shopData.lastUpdated = Date.now();
             
-            if (!shopData.votes) shopData.votes = [];
-            if (shopData.votes.includes(newStatus)) {
-                shopData.confirmations++;
-            } else {
-                shopData.votes = [newStatus];
-                shopData.confirmations = 1;
-            }
-
-            if (shopData.confirmations >= 2) {
-                shopData.status = newStatus;
-                shopData.confirmations = 0;
-                shopData.votes = [];
-                shopData.lastUpdated = Date.now();
-                shopData.confirmed = true;
-                recordVote(locationKey);
-                alert((shop === 'nescafe' ? 'Nescafe' : 'Nandini') + ' status updated to ' + newStatus + '!');
-            } else {
-                recordVote(locationKey);
-                alert('Vote recorded! Need ' + (2 - shopData.confirmations) + ' more confirmation(s)');
-            }
-
             saveData(data);
+            alert((shop === 'nescafe' ? 'Nescafe' : 'Nandini') + ' status updated!');
             openModal('studentcentre');
         }
 
         function updateBadmintonCount() {
-            if (!canUserVote('badminton')) {
-                const mins = getVoteCooldownRemaining('badminton');
-                alert('Please wait ' + mins + ' minute(s) before updating again.');
-                return;
-            }
-
             const count = parseInt(document.getElementById('badminton-count').value);
             if (isNaN(count) || count < 0 || count > 4) {
                 alert('Please enter a number between 0 and 4');
@@ -964,7 +819,6 @@
             if (data.badminton.reports.length > 3) data.badminton.reports.shift();
             data.badminton.lastUpdated = Date.now();
             
-            recordVote('badminton');
             saveData(data);
             alert('Badminton court count updated!');
             closeModal();
