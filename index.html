@@ -140,11 +140,28 @@ const THRESHOLD_DEFAULT=3;
 const THRESHOLD_BADMINTON=2;
 
 function openModal(place){
-var html="<span class='close-btn' onclick='closeModal()'>✕</span><h3>Vote</h3>";
+var html="<span class='close-btn' onclick='closeModal()'>✕</span><h3>Update</h3>";
 
 if(place==='mess'){
 html+="<button onclick=vote('mess','Food Available')>Food Available</button>";
 html+="<button onclick=vote('mess','Food Not Available')>Food Not Available</button>";
+}
+else if(place==='gym'){
+html+="<button onclick=updateGym('0-3')>0-3</button>";
+html+="<button onclick=updateGym('3-5')>3-5</button>";
+html+="<button onclick=updateGym('5+')>5+</button>";
+}
+else if(place==='badminton'){
+html+="<input type='number' id='val' min='0' max='4'>";
+html+="<button onclick=vote('badminton',document.getElementById('val').value)>Submit</button>";
+}
+else{
+html+="<button onclick=vote('"+place+"','Open')>Open</button>";
+html+="<button onclick=vote('"+place+"','Closed')>Closed</button>";
+}
+
+document.getElementById('modal-content').innerHTML=html;
+document.getElementById('modal').style.display='flex';
 }
 else if(place==='gym'){
 html+="<button onclick=updateGym('0-3')>0-3</button>";
@@ -218,15 +235,19 @@ return"Updated "+m+" min ago";
 
 db.ref(place).on("value",snap=>{
 var d=snap.val();
-if(!d)return;
+if(!d){
+  document.getElementById(place+'-status').innerHTML='Not Updated';
+  document.getElementById(place+'-status').className='status orange';
+  return;
+}
 
 if(place==='badminton'){
-document.getElementById(place+'-status').innerHTML=d.count+" courts";
-document.getElementById(place+'-status').className='status blue';
+  document.getElementById(place+'-status').innerHTML=d.count+" courts";
+  document.getElementById(place+'-status').className='status blue';
 }
 else{
-document.getElementById(place+'-status').innerHTML = d.status || '';
-document.getElementById(place+'-status').className='status blue';
+  document.getElementById(place+'-status').innerHTML=d.status;
+  document.getElementById(place+'-status').className='status blue';
 }
 
 document.getElementById(place+'-time').innerHTML=timeAgo(d.timestamp);
