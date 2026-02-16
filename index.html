@@ -18,6 +18,7 @@ h1{text-align:center;color:#fff;margin-bottom:10px}
 .card:hover{transform:translateY(-3px)}
 .status{margin-top:10px;padding:8px;border-radius:20px;text-align:center;font-weight:bold}
 .time{margin-top:6px;font-size:12px;color:#666;text-align:center}
+.pending{margin-top:6px;font-size:12px;color:#f59e0b;text-align:center}
 .green{background:#10b981;color:#fff}
 .red{background:#ef4444;color:#fff}
 .blue{background:#3b82f6;color:#fff}
@@ -41,35 +42,13 @@ input{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:1px solid
 
 <div class="grid">
 
-<div class="card" onclick="openModal('mess')">
-<h3>🍽️ Mess</h3>
-<div id="mess-status" class="status orange">Loading...</div>
-<div id="mess-time" class="time"></div>
-</div>
-
-<div class="card" onclick="openModal('nescafe')">
-<h3>☕ Nescafé</h3>
-<div id="nescafe-status" class="status orange">Loading...</div>
-<div id="nescafe-time" class="time"></div>
-</div>
-
-<div class="card" onclick="openModal('nandini')">
-<h3>🥛 Nandini</h3>
-<div id="nandini-status" class="status orange">Loading...</div>
-<div id="nandini-time" class="time"></div>
-</div>
-
-<div class="card" onclick="openModal('gym')">
-<h3>🏋️ Gym</h3>
-<div id="gym-status" class="status orange">Loading...</div>
-<div id="gym-time" class="time"></div>
-</div>
-
-<div class="card" onclick="openModal('badminton')">
-<h3>🏸 Badminton Courts</h3>
-<div id="badminton-status" class="status orange">Loading...</div>
-<div id="badminton-time" class="time"></div>
-</div>
+${['mess','nescafe','nandini','gym','badminton'].map(id=>`
+<div class="card" onclick="openModal('${id}')">
+<h3>${id==='mess'?'🍽️ Mess':id==='nescafe'?'☕ Nescafé':id==='nandini'?'🥛 Nandini':id==='gym'?'🏋️ Gym':'🏸 Badminton Courts'}</h3>
+<div id="${id}-status" class="status orange">Loading...</div>
+<div id="${id}-time" class="time"></div>
+<div id="${id}-pending" class="pending"></div>
+</div>`).join('')}
 
 </div>
 </div>
@@ -118,20 +97,29 @@ function rateLimit(place, callback){
 }
 
 function vote(place, value){
+  if(!value) return alert("Enter valid value");
+
   rateLimit(place,function(ok){
     if(!ok){ alert("Max 4 updates in 5 mins reached"); return; }
 
     var voteRef = db.ref(place + "_votes/" + value);
-    voteRef.transaction(function(current){
-      return (current||0)+1;
-    }, function(error, committed, snapshot){
-      if(snapshot && snapshot.val() >= VOTE_THRESHOLD){
-        if(place === 'gym' || place === 'badminton'){
+    voteRef.transaction(function(current){ return (current||0)+1; },
+    function(error, committed, snapshot){
+      var votes = snapshot.val();
+      var remaining = VOTE_THRESHOLD - votes;
+
+      if(votes >= VOTE_THRESHOLD){
+        if(place==='gym' || place==='badminton'){
           db.ref(place).set({count:parseInt(value), timestamp:Date.now()});
         } else {
           db.ref(place).set({status:value, timestamp:Date.now()});
         }
         db.ref(place + "_votes").remove();
+        db.ref(place + "_pending").remove();
+      } else {
+        db.ref(place + "_pending").set({
+          message: "Awaiting confirmation from " + remaining + " more user(s)..."
+        });
       }
     });
   });
@@ -143,35 +131,19 @@ function openModal(type){
   var content=document.getElementById('modal-content');
   var html="";
 
-  if(type==='mess'){
-    html+=`<h3>Vote Mess</h3>
-    <div class='btn-group'>
-    <button onclick="vote('mess','available')">Food Available</button>
-    <button onclick="vote('mess','not_available')">Food Not Available</button>
-    </div><div class='note'>Needs 3 matching votes</div>`;
-  }
-
-  if(type==='nescafe'||type==='nandini'){
+  if(['mess','nescafe','nandini'].includes(type)){
     html+=`<h3>Vote ${type}</h3>
     <div class='btn-group'>
-    <button onclick="vote('${type}','open')">Open</button>
-    <button onclick="vote('${type}','closed')">Closed</button>
+    <button onclick="vote('${type}','available' )">Available</button>
+    <button onclick="vote('${type}','not_available')">Not Available</button>
     </div><div class='note'>Needs 3 matching votes</div>`;
   }
 
-  if(type==='gym'){
-    html+=`<h3>Vote Gym Count</h3>
+  if(type==='gym' || type==='badminton'){
+    html+=`<h3>Vote ${type}</h3>
     <input type='number' id='val'>
     <div class='btn-group'>
-    <button onclick="vote('gym',document.getElementById('val').value)">Submit</button>
-    </div><div class='note'>Needs 3 matching votes</div>`;
-  }
-
-  if(type==='badminton'){
-    html+=`<h3>Vote Badminton (0-4)</h3>
-    <input type='number' id='val' min='0' max='4'>
-    <div class='btn-group'>
-    <button onclick="vote('badminton',document.getElementById('val').value)">Submit</button>
+    <button onclick="vote('${type}',document.getElementById('val').value)">Submit</button>
     </div><div class='note'>Needs 3 matching votes</div>`;
   }
 
@@ -187,37 +159,30 @@ function timeAgo(timestamp){
   return "Updated " + diff + " minutes ago";
 }
 
-function listen(place,statusEl,timeEl){
-  db.ref(place).on('value',function(snap){
+['mess','nescafe','nandini','gym','badminton'].forEach(place=>{
+  var statusEl=document.getElementById(place+'-status');
+  var timeEl=document.getElementById(place+'-time');
+  var pendingEl=document.getElementById(place+'-pending');
+
+  db.ref(place).on('value',snap=>{
     var data=snap.val();
     if(!data){ statusEl.innerHTML="Not Updated"; statusEl.className='status orange'; timeEl.innerHTML=""; return; }
 
-    if(place==='mess'){
-      statusEl.innerHTML = data.status==='available' ? "Food Available ✓" : "Food Not Available ✗";
-      statusEl.className = data.status==='available' ? 'status green' : 'status red';
-    }
-    else if(place==='badminton'){
-      statusEl.innerHTML = data.count + " / 4 Courts Occupied";
+    if(place==='gym' || place==='badminton'){
+      statusEl.innerHTML = data.count + (place==='badminton'?' / 4 Courts Occupied':' people');
       statusEl.className='status blue';
-    }
-    else if(data.status){
-      statusEl.innerHTML = data.status==='open' ? "Open ✓" : "Closed ✗";
-      statusEl.className = data.status==='open' ? 'status green' : 'status red';
-    }
-    else if(data.count!==undefined){
-      statusEl.innerHTML = data.count + " people";
-      statusEl.className='status blue';
+    } else {
+      statusEl.innerHTML = data.status==='available' || data.status==='open' ? "Available ✓" : "Not Available ✗";
+      statusEl.className = (data.status==='available'||data.status==='open') ? 'status green' : 'status red';
     }
 
     timeEl.innerHTML = timeAgo(data.timestamp);
   });
-}
 
-listen('mess',document.getElementById('mess-status'),document.getElementById('mess-time'));
-listen('nescafe',document.getElementById('nescafe-status'),document.getElementById('nescafe-time'));
-listen('nandini',document.getElementById('nandini-status'),document.getElementById('nandini-time'));
-listen('gym',document.getElementById('gym-status'),document.getElementById('gym-time'));
-listen('badminton',document.getElementById('badminton-status'),document.getElementById('badminton-time'));
+  db.ref(place + '_pending').on('value',snap=>{
+    pendingEl.innerHTML = snap.val() ? snap.val().message : "";
+  });
+});
 
 </script>
 
