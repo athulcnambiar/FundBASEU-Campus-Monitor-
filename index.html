@@ -28,6 +28,7 @@ button{padding:12px;border:none;border-radius:8px;font-weight:bold;cursor:pointe
 .modal-content{background:#fff;padding:25px;border-radius:15px;width:90%;max-width:400px}
 .btn-group{display:grid;gap:10px;margin-top:15px}
 input{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:1px solid #ccc}
+.note{font-size:12px;color:#666;margin-top:8px}
 </style>
 </head>
 <body>
@@ -93,13 +94,14 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 
 // Presence
-var presenceRef = db.ref("presence").push();
-presenceRef.set(true);
-presenceRef.onDisconnect().remove();
+var pRef = db.ref("presence").push();
+pRef.set(true);
+pRef.onDisconnect().remove();
 db.ref("presence").on("value", s => {
   document.getElementById("liveCount").innerText = s.numChildren();
 });
 
+const VOTE_THRESHOLD = 3;
 const LIMIT_WINDOW = 5 * 60 * 1000;
 const LIMIT_COUNT = 4;
 
@@ -115,12 +117,25 @@ function rateLimit(place, callback){
   }, function(error, committed){ callback(committed); });
 }
 
-function timeAgo(timestamp){
-  if(!timestamp) return "";
-  var diff = Math.floor((Date.now() - timestamp)/60000);
-  if(diff < 1) return "Updated just now";
-  if(diff === 1) return "Updated 1 minute ago";
-  return "Updated " + diff + " minutes ago";
+function vote(place, value){
+  rateLimit(place,function(ok){
+    if(!ok){ alert("Max 4 updates in 5 mins reached"); return; }
+
+    var voteRef = db.ref(place + "_votes/" + value);
+    voteRef.transaction(function(current){
+      return (current||0)+1;
+    }, function(error, committed, snapshot){
+      if(snapshot && snapshot.val() >= VOTE_THRESHOLD){
+        if(place === 'gym' || place === 'badminton'){
+          db.ref(place).set({count:parseInt(value), timestamp:Date.now()});
+        } else {
+          db.ref(place).set({status:value, timestamp:Date.now()});
+        }
+        db.ref(place + "_votes").remove();
+      }
+    });
+  });
+  document.getElementById('modal').style.display='none';
 }
 
 function openModal(type){
@@ -129,67 +144,47 @@ function openModal(type){
   var html="";
 
   if(type==='mess'){
-    html+=`<h3>Update Mess</h3>
+    html+=`<h3>Vote Mess</h3>
     <div class='btn-group'>
-    <button onclick="updateStatus('mess','available')">Food Available</button>
-    <button onclick="updateStatus('mess','not_available')">Food Not Available</button>
-    </div>`;
+    <button onclick="vote('mess','available')">Food Available</button>
+    <button onclick="vote('mess','not_available')">Food Not Available</button>
+    </div><div class='note'>Needs 3 matching votes</div>`;
   }
 
   if(type==='nescafe'||type==='nandini'){
-    html+=`<h3>Update ${type}</h3>
+    html+=`<h3>Vote ${type}</h3>
     <div class='btn-group'>
-    <button onclick="updateStatus('${type}','open')">Open</button>
-    <button onclick="updateStatus('${type}','closed')">Closed</button>
-    </div>`;
+    <button onclick="vote('${type}','open')">Open</button>
+    <button onclick="vote('${type}','closed')">Closed</button>
+    </div><div class='note'>Needs 3 matching votes</div>`;
   }
 
   if(type==='gym'){
-    html+=`<h3>Update Gym Count</h3>
-    <input type='number' id='gymCount'>
+    html+=`<h3>Vote Gym Count</h3>
+    <input type='number' id='val'>
     <div class='btn-group'>
-    <button onclick="updateGym()">Submit</button>
-    </div>`;
+    <button onclick="vote('gym',document.getElementById('val').value)">Submit</button>
+    </div><div class='note'>Needs 3 matching votes</div>`;
   }
 
   if(type==='badminton'){
-    html+=`<h3>Badminton Courts (0-4)</h3>
-    <input type='number' id='badmintonCount' min='0' max='4'>
+    html+=`<h3>Vote Badminton (0-4)</h3>
+    <input type='number' id='val' min='0' max='4'>
     <div class='btn-group'>
-    <button onclick="updateBadminton()">Submit</button>
-    </div>`;
+    <button onclick="vote('badminton',document.getElementById('val').value)">Submit</button>
+    </div><div class='note'>Needs 3 matching votes</div>`;
   }
 
   content.innerHTML=html;
   modal.style.display='flex';
 }
 
-function updateStatus(place,value){
-  rateLimit(place,function(ok){
-    if(!ok){ alert("Max 4 updates in 5 mins reached"); return; }
-    db.ref(place).set({status:value,timestamp:Date.now()});
-  });
-  modal.style.display='none';
-}
-
-function updateGym(){
-  var val=parseInt(document.getElementById('gymCount').value);
-  if(isNaN(val)) return alert("Enter valid number");
-  rateLimit('gym',function(ok){
-    if(!ok){ alert("Max 4 updates in 5 mins reached"); return; }
-    db.ref('gym').set({count:val,timestamp:Date.now()});
-  });
-  modal.style.display='none';
-}
-
-function updateBadminton(){
-  var val=parseInt(document.getElementById('badmintonCount').value);
-  if(isNaN(val)||val<0||val>4) return alert("Enter 0-4");
-  rateLimit('badminton',function(ok){
-    if(!ok){ alert("Max 4 updates in 5 mins reached"); return; }
-    db.ref('badminton').set({count:val,timestamp:Date.now()});
-  });
-  modal.style.display='none';
+function timeAgo(timestamp){
+  if(!timestamp) return "";
+  var diff = Math.floor((Date.now() - timestamp)/60000);
+  if(diff < 1) return "Updated just now";
+  if(diff === 1) return "Updated 1 minute ago";
+  return "Updated " + diff + " minutes ago";
 }
 
 function listen(place,statusEl,timeEl){
