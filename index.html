@@ -68,6 +68,15 @@ button{
   border:none;
   border-radius:8px;
   font-weight:bold;
+  cursor:pointer;
+}
+input{
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  border:2px solid #ddd;
+  border-radius:8px;
+  font-size:14px;
 }
 .refresh{
   position:fixed;
@@ -78,6 +87,19 @@ button{
   border-radius:30px;
   padding:10px 16px;
   font-size:13px;
+  z-index:999;
+}
+label{
+  display:block;
+  margin:10px 0 5px 0;
+  font-weight:bold;
+  font-size:13px;
+}
+.menu-text{
+  font-size:10px;
+  color:#666;
+  margin-top:4px;
+  line-height:1.3;
 }
 </style>
 </head>
@@ -91,7 +113,8 @@ button{
 
 <div class="card" onclick="openModal('mess')">
 <h3>🍽️ Mess</h3>
-<div id="mess-status" class="status orange"></div>
+<div id="mess-meal" class="status blue"></div>
+<div id="mess-menu" class="menu-text"></div>
 <div id="mess-votes" class="small"></div>
 <div id="mess-pending" class="small"></div>
 <div id="mess-time" class="small"></div>
@@ -219,7 +242,8 @@ function updateMessDisplay(){
 const meal=getCurrentMeal();
 const even=isEvenWeek();
 let food=(meal==="Breakfast")?(even?menu.Breakfast.even:menu.Breakfast.odd):menu[meal];
-document.getElementById("mess-status").innerHTML=meal+"<br><small>"+food+"</small>";
+document.getElementById("mess-meal").innerHTML=meal;
+document.getElementById("mess-menu").innerHTML=food;
 }
 updateMessDisplay();
 setInterval(updateMessDisplay,60000);
@@ -233,12 +257,14 @@ html+="<button onclick=vote('mess','Food Available')>Food Available</button>";
 html+="<button onclick=vote('mess','Food Not Available')>Food Not Available</button>";
 }
 else if(place==='gym'){
-html+="<button onclick=updateGym('0-3')>0-3</button>";
-html+="<button onclick=updateGym('3-5')>3-5</button>";
-html+="<button onclick=updateGym('5+')>5+</button>";
+html+="<label>How many people in gym?</label>";
+html+="<button onclick=updateGym('0-3')>0-3 people</button>";
+html+="<button onclick=updateGym('3-5')>3-5 people</button>";
+html+="<button onclick=updateGym('5+')>5+ people</button>";
 }
 else if(place==='badminton'){
-html+="<input type='number' id='val' min='0' max='4'>";
+html+="<label>How many courts occupied? (0-4)</label>";
+html+="<input type='number' id='val' min='0' max='4' placeholder='Enter 0-4'>";
 html+="<button onclick=vote('badminton',document.getElementById('val').value)>Submit</button>";
 }
 else{
@@ -256,7 +282,7 @@ document.getElementById("modal").style.display="none";
 
 // ---------- VOTING ----------
 function vote(place,value){
-if(!value)return;
+if(!value)return alert("Please enter a value");
 
 var deviceRef=db.ref(place+"_deviceVotes/"+deviceId);
 deviceRef.once("value",snap=>{
@@ -278,8 +304,11 @@ db.ref(place).set({status:value,timestamp:Date.now()});
 db.ref(place+"_votes").remove();
 db.ref(place+"_pending").remove();
 db.ref(place+"_deviceVotes").remove();
+alert("Status updated successfully!");
 }else{
-db.ref(place+"_pending").set({message:"Awaiting confirmation from "+remaining+" more user(s)..."});}
+db.ref(place+"_pending").set({message:"Awaiting "+remaining+" more confirmation(s)..."});
+alert("Vote recorded! Need "+remaining+" more confirmation(s)");
+}
 });
 deviceRef.set(true);
 });
@@ -288,6 +317,7 @@ closeModal();
 
 function updateGym(range){
 db.ref("gym").set({status:range,timestamp:Date.now()});
+alert("Gym status updated!");
 closeModal();
 }
 
@@ -304,12 +334,18 @@ return"Updated "+m+" min ago";
 db.ref(place).on("value",snap=>{
 var d=snap.val();
 if(!d){
-document.getElementById(place+'-status').className="status orange";
+if(place!=='mess'){
+var el=document.getElementById(place+'-status');
+if(el){
+el.className="status orange";
+el.innerHTML="Not Updated";
+}
+}
 return;
 }
 
 if(place==='badminton'){
-document.getElementById(place+'-status').innerHTML=d.count+" courts";
+document.getElementById(place+'-status').innerHTML=d.count+" courts occupied";
 document.getElementById(place+'-status').className='status blue';
 document.getElementById(place+'-time').innerHTML=timeAgo(d.timestamp);
 }
@@ -327,10 +363,12 @@ if(place!=='gym'){
 db.ref(place+"_votes").on("value",snap=>{
 var total=0;
 snap.forEach(c=>total+=c.val());
-document.getElementById(place+'-votes').innerHTML=total>0?"Votes: "+total:"";
+var votesEl=document.getElementById(place+'-votes');
+if(votesEl)votesEl.innerHTML=total>0?"Votes: "+total:"";
 });
 db.ref(place+"_pending").on("value",snap=>{
-document.getElementById(place+'-pending').innerHTML=snap.val()?snap.val().message:"";
+var pendingEl=document.getElementById(place+'-pending');
+if(pendingEl)pendingEl.innerHTML=snap.val()?snap.val().message:"";
 });
 }
 });
