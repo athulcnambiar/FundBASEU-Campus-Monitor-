@@ -905,3 +905,91 @@ initNotif();
 </script>
 </body>
 </html>
+<script>
+(function () {
+  let deferredInstallPrompt = null;
+
+  function isStandaloneMode() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
+  function notify(msg) {
+    if (typeof toast === "function") toast(msg);
+    else alert(msg);
+  }
+
+  function ensureInstallButton() {
+    let btn = document.getElementById("install-btn");
+    if (btn) return btn;
+
+    btn = document.createElement("button");
+    btn.id = "install-btn";
+    btn.textContent = "📲 Add to Home";
+    btn.style.cssText = [
+      "display:none",
+      "position:fixed",
+      "bottom:20px",
+      "left:20px",
+      "background:linear-gradient(135deg,#10b981,#059669)",
+      "color:#fff",
+      "border:none",
+      "border-radius:30px",
+      "padding:11px 17px",
+      "font-size:0.82em",
+      "font-weight:700",
+      "cursor:pointer",
+      "box-shadow:0 4px 14px rgba(16,185,129,0.35)",
+      "z-index:999",
+      "font-family:'Space Grotesk',sans-serif"
+    ].join(";");
+
+    document.body.appendChild(btn);
+    return btn;
+  }
+
+  function showInstallBtn(show) {
+    const btn = ensureInstallButton();
+    btn.style.display = show ? "block" : "none";
+  }
+
+  async function installApp() {
+    if (isStandaloneMode()) {
+      notify("✅ App already added to home screen");
+      return;
+    }
+
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      try {
+        await deferredInstallPrompt.userChoice;
+      } catch (_) {}
+      deferredInstallPrompt = null;
+      showInstallBtn(false);
+      return;
+    }
+
+    alert(
+`To add this app to your home screen:
+
+• iPhone (Safari): Tap Share → Add to Home Screen
+• Android (Chrome): Tap menu ⋮ → Add to Home screen`
+    );
+  }
+
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (!isStandaloneMode()) showInstallBtn(true);
+  });
+
+  window.addEventListener("appinstalled", function () {
+    showInstallBtn(false);
+    notify("✅ Added to home screen");
+  });
+
+  const btn = ensureInstallButton();
+  btn.addEventListener("click", installApp);
+
+  if (!isStandaloneMode()) showInstallBtn(true);
+})();
+</script>
