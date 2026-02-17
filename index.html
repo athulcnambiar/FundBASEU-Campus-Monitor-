@@ -538,24 +538,79 @@ function listenPlace(place, thresh, onStatus){
   });
 }
 
+
 // MESS
 listenPlace("mess",T_MESS,function(d){
   var av=ge("mess-avail"),tEl=ge("mess-ts");
-  if(!d){ paintCard("mess-card","dark"); av.className="sbdg s-gray"; av.textContent="Not Updated"; if(tEl) tEl.textContent=""; return; }
-  if(d.status==="Food Available"){ paintCard("mess-card","green"); av.className="sbdg s-green"; av.textContent="✅ Food Available"; }
-  else { paintCard("mess-card","red"); av.className="sbdg s-red"; av.textContent="❌ Food Not Available"; }
+
+  if(!d){
+    paintCard("mess-card","dark");
+    av.className="sbdg s-gray";
+    av.textContent="Not Updated";
+    if(tEl) tEl.textContent="";
+    return;
+  }
+
+  var st = (d.status || "").trim().toLowerCase();
+
+  if(st === "food available"){
+    paintCard("mess-card","green");
+    av.className="sbdg s-green";
+    av.textContent="✅ Food Available";
+  }
+  else if(st === "food not available"){
+    paintCard("mess-card","red");
+    av.className="sbdg s-red";
+    av.textContent="❌ Food Not Available";
+  }
+  else{
+    paintCard("mess-card","dark");
+    av.className="sbdg s-gray";
+    av.textContent=d.status || "Not Updated";
+  }
+
   if(tEl) tEl.textContent=ago(d.ts);
 });
+
 
 // GYM
 listenPlace("gym",T_GYM,function(d){
   var s=ge("gym-status"),tEl=ge("gym-ts");
-  if(!d){ paintCard("gym-card","dark"); s.className="sbdg s-gray"; s.textContent="Not Updated"; if(tEl) tEl.textContent=""; return; }
-  if(d.status==="Open · Free"){ paintCard("gym-card","green"); s.className="sbdg s-green"; s.textContent="✅ Open · Free"; }
-  else if(d.status==="Open · Crowded"){ paintCard("gym-card","amber"); s.className="sbdg s-amber"; s.textContent="⚠️ Crowded"; }
-  else { paintCard("gym-card","red"); s.className="sbdg s-red"; s.textContent="🔒 Closed"; }
+
+  if(!d){
+    paintCard("gym-card","dark");
+    s.className="sbdg s-gray";
+    s.textContent="Not Updated";
+    if(tEl) tEl.textContent="";
+    return;
+  }
+
+  var st = (d.status || "").trim();
+
+  if(st === "Open · Free"){
+    paintCard("gym-card","green");
+    s.className="sbdg s-green";
+    s.textContent="✅ Open · Free";
+  }
+  else if(st === "Open · Crowded"){
+    paintCard("gym-card","amber");
+    s.className="sbdg s-amber";
+    s.textContent="⚠️ Crowded";
+  }
+  else if(st === "Closed"){
+    paintCard("gym-card","red");
+    s.className="sbdg s-red";
+    s.textContent="🔒 Closed";
+  }
+  else{
+    paintCard("gym-card","dark");
+    s.className="sbdg s-gray";
+    s.textContent=st || "Not Updated";
+  }
+
   if(tEl) tEl.textContent=ago(d.ts);
 });
+
 
 // NESCAFE
 listenPlace("nescafe",T_NESCAFE,function(d){
