@@ -321,17 +321,17 @@ var HB_VOTES=5, HB_TTL=600000, IMM_DV=5, ANN_EXP=43200000;
 
 // Faculty list — 12 professors
 var FACULTY = [
-  "Dr. Bidur",
-  "Dr. Megha",
-  "Dr. Irfan",
-  "Dr. Shameer",
+  "Dr.Bidur",
+  "Dr.Megha",
+  "Dr.Irfan",
+  "Dr.Shameer",
   "Dr.Nageshwar",
-  "Dr. Ishfaq",
+  "Dr.Ishfaq",
   "Dr.Muzaffar",
-  "Dr. Kasturi",
-  "Dr. Moushmi",
-  "Dr. Sushmita",
-  "Dr. Ramesh Iyer",
+  "Dr.Kasturi",
+  "Dr.Moushmi",
+  "Dr.Sushmita",
+  "Dean",
   "Dr.Asha"
 ];
 
@@ -381,11 +381,14 @@ var CARD_COLORS = {
 function paintCard(id, colorKey){
   var card = ge(id);
   if (!card) return;
+
   var c = CARD_COLORS[colorKey] || CARD_COLORS.dark;
-  card.style.background    = c.bg;
-  card.style.borderColor   = c.border;
-  card.style.boxShadow     = "0 4px 20px "+c.glow;
+
+  card.style.setProperty("background", c.bg, "important");
+  card.style.setProperty("border-color", c.border, "important");
+  card.style.setProperty("box-shadow", "0 6px 25px " + c.glow, "important");
 }
+
 
 // ═══════════════════════════════════════════════
 //  COMMUNITY BADGE
