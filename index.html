@@ -4,997 +4,1003 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FundBASEU Tracker</title>
-
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+* { margin:0; padding:0; box-sizing:border-box; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'DM Sans', sans-serif;
+  background: #0f0f1a;
   min-height: 100vh;
-  padding: 15px;
+  padding: 15px 15px 90px 15px;
+  color: #fff;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-header {
-  text-align: center;
-  color: white;
-  margin-bottom: 20px;
-}
-
+/* HEADER */
+header { text-align:center; margin-bottom:12px; padding-top:8px; }
 header h1 {
-  font-size: 2.2em;
-  margin-bottom: 8px;
-  text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
-  font-weight: 800;
-  letter-spacing: 1px;
+  font-family:'Space Grotesk',sans-serif;
+  font-size:1.9em; font-weight:800;
+  background:linear-gradient(135deg,#a78bfa,#60a5fa,#34d399);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  letter-spacing:-1px; margin-bottom:4px;
 }
-
-header p {
-  font-size: 1em;
-  opacity: 0.95;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
-  margin-bottom: 10px;
-}
-
+header p { font-size:0.8em; color:#666; margin-bottom:8px; }
 .updates-link {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 8px 16px;
-  border-radius: 20px;
-  color: white;
-  text-decoration: none;
-  font-size: 0.9em;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  display:inline-block;
+  background:rgba(167,139,250,0.15); padding:6px 14px; border-radius:20px;
+  color:#a78bfa; text-decoration:none; font-size:0.8em; font-weight:600;
+  border:1px solid rgba(167,139,250,0.3);
 }
 
-.updates-link:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+/* NOTIFICATION BANNER */
+.notif-banner {
+  display:none;
+  background:linear-gradient(135deg,#1e1b4b,#1e3a5f);
+  border:1px solid #4f46e5; border-radius:12px;
+  padding:10px 14px; margin:10px 0;
+  font-size:0.8em; color:#a5b4fc;
+  align-items:center; gap:10px; flex-wrap:wrap;
 }
+.notif-banner.show { display:flex; }
+.notif-banner-text { flex:1; }
+.notif-btn {
+  background:#4f46e5; border:none; color:white;
+  padding:6px 14px; border-radius:8px; font-size:0.82em;
+  font-weight:700; cursor:pointer; white-space:nowrap;
+  font-family:'Space Grotesk',sans-serif;
+}
+.notif-status { font-size:0.72em; color:#818cf8; margin-top:4px; width:100%; }
 
+/* LIVE TICKER */
+.ticker-wrap {
+  background:#12121f; border:1px solid #1e1e35; border-radius:12px;
+  padding:7px 12px; margin:10px 0;
+  display:flex; align-items:center; gap:10px; overflow:hidden;
+}
+.ticker-live {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:0.62em; font-weight:800; color:#ef4444;
+  letter-spacing:1.5px; white-space:nowrap;
+  display:flex; align-items:center; gap:5px; flex-shrink:0;
+}
+.live-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:#ef4444; animation:blink 1s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.ticker-viewport { flex:1; overflow:hidden; position:relative; }
+.ticker-track {
+  display:flex; gap:0; white-space:nowrap;
+  animation:ticker 25s linear infinite;
+}
+.ticker-track:hover { animation-play-state:paused; }
+@keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.tick-item { font-size:0.75em; color:#64748b; padding-right:40px; }
+.tick-item b { color:#94a3b8; font-weight:500; }
+
+/* STATS */
 .stats-bar {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  display:flex; justify-content:center; gap:28px;
+  margin:12px 0; flex-wrap:wrap;
+}
+.stat-box { text-align:center; }
+.stat-num {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:1.7em; font-weight:800; display:block; color:#fff;
+}
+.stat-lbl { font-size:0.72em; color:#555; }
+
+/* SECTION LABEL */
+.sec-label {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:0.65em; font-weight:700; letter-spacing:2px;
+  text-transform:uppercase; color:#444; margin:14px 0 8px 2px;
 }
 
-.stat-item {
-  text-align: center;
-  color: white;
-  font-size: 0.9em;
-  opacity: 0.95;
-}
-
-.stat-number {
-  font-size: 1.8em;
-  font-weight: bold;
-  display: block;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
-
-.stat-label {
-  font-size: 0.85em;
-  opacity: 0.9;
-}
-
+/* GRID */
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(155px,1fr));
+  gap:10px; margin-bottom:6px;
 }
 
+/* CARDS */
 .card {
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(10px);
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  -webkit-tap-highlight-color: transparent;
+  background:#1a1a2e; border-radius:16px; padding:15px;
+  box-shadow:0 4px 18px rgba(0,0,0,0.4);
+  cursor:pointer; border:1px solid #242438;
+  transition:transform 0.2s,box-shadow 0.2s;
+  -webkit-tap-highlight-color:transparent;
+  position:relative; overflow:hidden;
 }
-
-.card.food-available {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
+.card::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.025),transparent);
+  pointer-events:none;
 }
+.card:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,0.5); }
+.card:active { transform:scale(0.97); }
 
-.card.food-available .card-title,
-.card.food-available .menu-info,
-.card.food-available .votes-info,
-.card.food-available .last-updated {
-  color: white;
+/* card color states */
+.card.food-yes  { background:linear-gradient(135deg,#064e3b,#065f46); border-color:#10b981; }
+.card.food-no   { background:linear-gradient(135deg,#7f1d1d,#991b1b); border-color:#ef4444; }
+.card.gym-free  { background:linear-gradient(135deg,#064e3b,#065f46); border-color:#10b981; }
+.card.gym-busy  { background:linear-gradient(135deg,#78350f,#92400e); border-color:#f59e0b; }
+.card.gym-shut  { background:linear-gradient(135deg,#7f1d1d,#991b1b); border-color:#ef4444; }
+.card.shop-open { background:linear-gradient(135deg,#064e3b,#065f46); border-color:#10b981; }
+.card.shop-shut { background:linear-gradient(135deg,#7f1d1d,#991b1b); border-color:#ef4444; }
+
+.card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:9px; }
+.card-title { font-family:'Space Grotesk',sans-serif; font-size:0.95em; font-weight:700; color:#e2e8f0; }
+.card-icon { font-size:1.3em; }
+
+/* BADGES */
+.badge {
+  display:block; padding:5px 10px; border-radius:20px;
+  font-size:0.76em; font-weight:700; margin:3px 0;
+  text-align:center; width:100%;
 }
+.b-green  { background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.28); }
+.b-red    { background:rgba(239,68,68,0.18);  color:#f87171; border:1px solid rgba(239,68,68,0.28); }
+.b-amber  { background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.28); }
+.b-blue   { background:rgba(96,165,250,0.18); color:#93c5fd; border:1px solid rgba(96,165,250,0.28); }
+.b-gray   { background:rgba(100,116,139,0.15);color:#64748b; border:1px solid rgba(100,116,139,0.2); }
+.b-purple { background:rgba(167,139,250,0.15);color:#c4b5fd; border:1px solid rgba(167,139,250,0.25); }
 
-.card.food-available .status {
-  background: rgba(255, 255, 255, 0.3);
-  color: white;
+/* COMMUNITY CONFIRMATION BADGE */
+.comm-badge {
+  display:flex; align-items:center; gap:4px;
+  font-size:0.68em; font-weight:700; margin-top:4px;
+  padding:3px 8px; border-radius:7px; width:fit-content;
 }
+.comm-confirmed { background:rgba(16,185,129,0.12); color:#34d399; border:1px solid rgba(16,185,129,0.22); }
+.comm-partial   { background:rgba(245,158,11,0.12); color:#fbbf24; border:1px solid rgba(245,158,11,0.22); }
+.comm-none      { background:rgba(100,116,139,0.1);  color:#475569; border:1px solid rgba(100,116,139,0.18); }
 
-.card.food-available .menu-info {
-  background: rgba(255, 255, 255, 0.2);
+.menu-chip {
+  font-size:0.7em; color:#94a3b8; margin-top:5px;
+  background:rgba(255,255,255,0.04); padding:5px 8px;
+  border-radius:8px; line-height:1.45;
 }
+.time-chip { font-size:0.65em; color:#444; margin-top:5px; text-align:center; }
+.vote-chip { font-size:0.65em; color:#6366f1; margin-top:2px; text-align:center; }
 
-.card.food-finished {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
+/* IMMEDIATE UPDATES */
+.imm-section {
+  margin-top:14px; border:1px solid rgba(245,158,11,0.25);
+  border-radius:18px; padding:14px; background:#130f00;
 }
-
-.card.food-finished .card-title,
-.card.food-finished .menu-info,
-.card.food-finished .votes-info,
-.card.food-finished .last-updated {
-  color: white;
+.imm-head {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:0.95em; font-weight:800; color:#fbbf24;
+  margin-bottom:10px; display:flex; align-items:center; gap:6px;
 }
-
-.card.food-finished .status {
-  background: rgba(255, 255, 255, 0.3);
-  color: white;
+.imm-post {
+  background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2);
+  border-radius:10px; padding:9px 11px; margin-bottom:8px;
+  font-size:0.82em; color:#fde68a; line-height:1.45;
+  animation:fadeUp 0.3s ease;
 }
+.imm-meta { font-size:0.65em; color:#78350f; margin-top:3px; }
 
-.card.food-finished .menu-info {
-  background: rgba(255, 255, 255, 0.2);
+/* HEARTBEAT */
+.hb-section {
+  margin-top:14px; border:1px solid rgba(255,77,109,0.25);
+  border-radius:18px; padding:14px; background:#150009;
+  position:relative; overflow:hidden;
 }
-
-.card:active {
-  transform: scale(0.98);
+.hb-section::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,#ff4d6d,#ff758c,#ff4d6d);
+  background-size:200%; animation:shimmer 2s infinite;
 }
+@keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
 
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+.hb-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.hb-title {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:0.95em; font-weight:800; color:#ff4d6d;
+  display:flex; align-items:center; gap:6px;
 }
+.pulse-dot { width:8px; height:8px; border-radius:50%; background:#ff4d6d; animation:pulse 1.2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
+.hb-rules {
+  background:rgba(255,77,109,0.07); border:1px solid rgba(255,77,109,0.18);
+  border-radius:10px; padding:9px 11px; margin:8px 0;
+  font-size:0.72em; color:#fca5a5; line-height:1.7;
 }
+.hb-rules strong { color:#ff4d6d; display:block; margin-bottom:3px; font-family:'Space Grotesk',sans-serif; }
 
-.card-title {
-  font-size: 1.3em;
-  font-weight: bold;
-  color: #333;
+.hb-input-row { display:flex; gap:8px; margin:8px 0 2px; }
+.hb-input {
+  flex:1; background:rgba(255,255,255,0.06); border:1px solid #2a1520;
+  border-radius:10px; padding:9px 11px; color:white;
+  font-size:0.82em; font-family:'DM Sans',sans-serif; outline:none;
 }
-
-.card-icon {
-  font-size: 1.8em;
+.hb-input:focus { border-color:#ff4d6d; }
+.hb-input::placeholder { color:#4a2530; }
+.char-ct { font-size:0.65em; color:#4a2530; text-align:right; margin-bottom:6px; }
+.char-ct.warn { color:#f59e0b; }
+.btn-hb {
+  background:#ff4d6d; color:white; border:none; border-radius:10px;
+  padding:9px 13px; font-weight:700; font-size:0.82em; cursor:pointer;
+  font-family:'Space Grotesk',sans-serif; white-space:nowrap;
 }
-
-.status {
-  padding: 10px 15px;
-  border-radius: 20px;
-  font-weight: bold;
-  text-align: center;
-  margin: 10px 0;
-  font-size: 0.95em;
+.hb-feed { display:flex; flex-direction:column; gap:7px; margin-top:8px; max-height:280px; overflow-y:auto; }
+.hb-post {
+  background:rgba(255,77,109,0.07); border:1px solid rgba(255,77,109,0.18);
+  border-radius:10px; padding:9px 11px;
+  display:flex; gap:10px; align-items:center;
+  animation:fadeUp 0.3s ease;
 }
-
-.status.available, .status.open {
-  background: #10b981;
-  color: white;
+@keyframes fadeUp { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+.hb-post-text { font-size:0.82em; color:#fca5a5; flex:1; line-height:1.4; }
+.hb-right { display:flex; flex-direction:column; align-items:center; gap:3px; min-width:42px; }
+.upvote-btn {
+  background:rgba(255,77,109,0.15); border:1px solid rgba(255,77,109,0.28);
+  color:#ff4d6d; border-radius:8px; padding:4px 7px;
+  font-size:0.75em; font-weight:700; cursor:pointer; width:100%; text-align:center;
 }
+.upvote-btn.voted { opacity:0.45; cursor:default; }
+.timer-bar { height:2px; background:rgba(255,77,109,0.12); border-radius:2px; margin-top:5px; overflow:hidden; }
+.timer-fill { height:100%; background:#ff4d6d; border-radius:2px; transition:width 1s linear; }
+.hb-empty { text-align:center; color:#4a2530; font-size:0.78em; padding:16px; }
 
-.status.finished, .status.closed {
-  background: #ef4444;
-  color: white;
-}
-
-.status.not-updated {
-  background: #f59e0b;
-  color: white;
-}
-
-.status.neutral {
-  background: #3b82f6;
-  color: white;
-}
-
-.status.free {
-  background: #10b981;
-  color: white;
-}
-
-.status.crowded {
-  background: #f59e0b;
-  color: white;
-}
-
-.last-updated {
-  font-size: 0.8em;
-  color: #666;
-  text-align: center;
-  margin-top: 8px;
-}
-
-.votes-info {
-  font-size: 0.75em;
-  color: #666;
-  text-align: center;
-  margin-top: 5px;
-}
-
-.menu-info {
-  font-size: 0.85em;
-  color: #555;
-  margin-top: 8px;
-  padding: 8px;
-  background: #f3f4f6;
-  border-radius: 8px;
-  line-height: 1.4;
-}
-
+/* MODAL */
 .modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.75);
-  z-index: 1000;
-  align-items: center;
-  justify-content: center;
-  padding: 15px;
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.82); z-index:1000;
+  align-items:flex-end; justify-content:center;
 }
-
-.modal.active {
-  display: flex;
+.modal.active { display:flex; }
+.modal-box {
+  background:#1a1a2e; border-radius:24px 24px 0 0;
+  padding:22px 18px 36px; width:100%; max-width:500px;
+  max-height:90vh; overflow-y:auto;
+  border:1px solid #2a2a3e; border-bottom:none;
+  animation:slideUp 0.28s ease;
 }
-
-.modal-content {
-  background: white;
-  border-radius: 20px;
-  padding: 25px;
-  max-width: 500px;
-  width: 100%;
-  max-height: 85vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-head {
+  font-family:'Space Grotesk',sans-serif;
+  font-size:1.2em; font-weight:800; color:#e2e8f0;
+  margin-bottom:18px; display:flex; justify-content:space-between; align-items:center;
 }
-
-.modal-header {
-  font-size: 1.6em;
-  font-weight: bold;
-  margin-bottom: 20px;
-  color: #333;
+.modal-x {
+  background:rgba(255,255,255,0.08); border:none; color:#666;
+  width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:0.9em;
 }
-
-.button-group {
-  display: grid;
-  gap: 12px;
-  margin: 20px 0;
+.btn-stack { display:flex; flex-direction:column; gap:9px; margin-top:10px; }
+.mbtn {
+  padding:13px; border:none; border-radius:11px;
+  font-size:0.92em; font-weight:700; cursor:pointer;
+  font-family:'Space Grotesk',sans-serif; transition:opacity 0.15s;
 }
-
-.btn {
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  font-size: 1em;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
+.mbtn:active { opacity:0.85; }
+.mbtn.g { background:#10b981; color:white; }
+.mbtn.r { background:#ef4444; color:white; }
+.mbtn.a { background:#f59e0b; color:white; }
+.mbtn.x { background:#1f2937; color:#6b7280; margin-top:6px; }
+.m-input {
+  width:100%; background:rgba(255,255,255,0.06); border:1px solid #2a2a3e;
+  border-radius:10px; padding:11px; color:white;
+  font-size:0.88em; font-family:'DM Sans',sans-serif; outline:none; margin-top:8px;
 }
+.m-input:focus { border-color:#a78bfa; }
 
-.btn:active {
-  transform: scale(0.97);
-}
-
-.btn-available {
-  background: #10b981;
-  color: white;
-}
-
-.btn-finished {
-  background: #ef4444;
-  color: white;
-}
-
-.btn-open {
-  background: #10b981;
-  color: white;
-}
-
-.btn-closed {
-  background: #ef4444;
-  color: white;
-}
-
-.btn-close {
-  background: #6b7280;
-  color: white;
-  margin-top: 15px;
-}
-
-.input-group {
-  margin: 20px 0;
-}
-
-.input-group label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: bold;
-  color: #333;
-  font-size: 0.95em;
-}
-
-.input-group input,
-.input-group textarea {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 1em;
-  font-family: inherit;
-}
-
-.input-group textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-.confirmation-notice {
-  background: #fef3c7;
-  padding: 12px;
-  border-radius: 10px;
-  margin: 15px 0;
-  text-align: center;
-  font-weight: bold;
-  color: #92400e;
-  font-size: 0.9em;
-}
-
+/* REFRESH */
 .refresh-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 30px;
-  padding: 12px 20px;
-  font-size: 0.9em;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  z-index: 999;
+  position:fixed; bottom:20px; right:20px;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:white; border:none; border-radius:30px;
+  padding:11px 17px; font-size:0.82em; font-weight:700; cursor:pointer;
+  box-shadow:0 4px 14px rgba(102,126,234,0.4); z-index:999;
+  font-family:'Space Grotesk',sans-serif;
 }
 
-.suggestions-list {
-  max-height: 400px;
-  overflow-y: auto;
-  margin: 15px 0;
+/* TOAST */
+#toast {
+  position:fixed; bottom:75px; left:50%; transform:translateX(-50%);
+  background:#1e293b; color:#e2e8f0; padding:9px 18px; border-radius:12px;
+  font-size:0.82em; z-index:9999; border:1px solid #334155;
+  opacity:0; transition:opacity 0.3s; pointer-events:none;
+  white-space:nowrap; max-width:90vw; text-align:center;
 }
 
-.suggestion-item {
-  background: #f3f4f6;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  border-left: 4px solid #3b82f6;
-}
-
-.suggestion-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.suggestion-text {
-  color: #333;
-  font-size: 0.95em;
-  line-height: 1.4;
-}
-
-.suggestion-time {
-  font-size: 0.75em;
-  color: #666;
-}
-
-@media (max-width: 768px) {
-  body {
-    padding: 10px;
-  }
-
-  header h1 {
-    font-size: 1.8em;
-  }
-
-  header p {
-    font-size: 0.9em;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .card {
-    padding: 18px;
-  }
-
-  .card-title {
-    font-size: 1.2em;
-  }
-
-  .modal-content {
-    padding: 20px;
-    max-height: 90vh;
-  }
-
-  .modal-header {
-    font-size: 1.4em;
-  }
-
-  .stats-bar {
-    gap: 20px;
-  }
-
-  .stat-number {
-    font-size: 1.5em;
-  }
+@media(max-width:480px){
+  header h1{font-size:1.6em;}
+  .grid{grid-template-columns:1fr 1fr;gap:9px;}
+  .card{padding:12px;}
+  .card-title{font-size:0.85em;}
 }
 </style>
 </head>
 <body>
+<div id="toast"></div>
 
 <div class="container">
   <header>
     <h1>🎓 FundBASEU Tracker</h1>
-    <p>Real-time campus status updates by students, for students</p>
-    <a href="https://sway.cloud.microsoft/CuEoSACHmG0wvSfR?ref=Link&loc=play" target="_blank" class="updates-link">📢 FundBASEU Updates</a>
+    <p>Real-time campus status · by students, for students</p>
+    <a href="https://sway.cloud.microsoft/CuEoSACHmG0wvSfR?ref=Link&loc=play" target="_blank" class="updates-link">📢 FundBASEU Updates →</a>
   </header>
 
-  <div class="stats-bar">
-    <div class="stat-item">
-      <span class="stat-number" id="liveCount">0</span>
-      <span class="stat-label">👥 Live Users</span>
+  <!-- NOTIFICATION BANNER -->
+  <div class="notif-banner" id="notif-banner">
+    <div class="notif-banner-text">
+      🔔 Get meal reminders at 7:30am · 12:30pm · 5:00pm · 7:30pm
+      <div class="notif-status" id="notif-status"></div>
     </div>
-    <div class="stat-item">
-      <span class="stat-number" id="totalVisitors">0</span>
-      <span class="stat-label">📊 Total Visitors</span>
+    <button class="notif-btn" id="notif-btn" onclick="requestNotifs()">Enable</button>
+  </div>
+
+  <!-- LIVE TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker-live"><div class="live-dot"></div>LIVE</div>
+    <div class="ticker-viewport">
+      <div class="ticker-track" id="ticker-track">
+        <span class="tick-item"><b>Waiting for live activity...</b></span>
+        <span class="tick-item"><b>Waiting for live activity...</b></span>
+      </div>
     </div>
   </div>
 
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-box">
+      <span class="stat-num" id="liveCount">0</span>
+      <span class="stat-lbl">👥 Live Now</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num" id="totalVisitors">0</span>
+      <span class="stat-lbl">📊 Total Visitors</span>
+    </div>
+  </div>
+
+  <div class="sec-label">Campus Status</div>
+
   <div class="grid">
-    <!-- Mess Card -->
+    <!-- MESS -->
     <div class="card" id="mess-card" onclick="openModal('mess')">
-      <div class="card-header">
+      <div class="card-head">
         <span class="card-title">🍽️ Mess</span>
         <span class="card-icon">🍛</span>
       </div>
-      <div id="mess-availability" class="status neutral"></div>
-      <div id="mess-meal" class="status neutral"></div>
-      <div id="mess-menu" class="menu-info"></div>
-      <div id="mess-votes" class="votes-info"></div>
-      <div id="mess-pending" class="votes-info"></div>
-      <div id="mess-time" class="last-updated"></div>
+      <span id="mess-avail" class="badge b-gray">Not Updated</span>
+      <div id="mess-comm" class="comm-badge comm-none">⬜ No votes yet</div>
+      <span id="mess-meal" class="badge b-blue" style="margin-top:5px;"></span>
+      <div id="mess-menu" class="menu-chip"></div>
+      <div id="mess-votes" class="vote-chip"></div>
+      <div id="mess-pending" class="vote-chip"></div>
+      <div id="mess-time" class="time-chip"></div>
     </div>
 
-    <!-- Gym Card -->
-    <div class="card" onclick="openModal('gym')">
-      <div class="card-header">
+    <!-- GYM -->
+    <div class="card" id="gym-card" onclick="openModal('gym')">
+      <div class="card-head">
         <span class="card-title">🏋️ Gym</span>
         <span class="card-icon">💪</span>
       </div>
-      <div id="gym-status" class="status not-updated">Click to update</div>
-      <div id="gym-time" class="last-updated"></div>
+      <span id="gym-status" class="badge b-gray">Not Updated</span>
+      <div id="gym-time" class="time-chip"></div>
     </div>
 
-    <!-- Nescafe Card -->
-    <div class="card" onclick="openModal('nescafe')">
-      <div class="card-header">
+    <!-- NESCAFE -->
+    <div class="card" id="nescafe-card" onclick="openModal('nescafe')">
+      <div class="card-head">
         <span class="card-title">☕ Nescafé</span>
         <span class="card-icon">🥤</span>
       </div>
-      <div id="nescafe-status" class="status not-updated">Click to update</div>
-      <div id="nescafe-votes" class="votes-info"></div>
-      <div id="nescafe-pending" class="votes-info"></div>
-      <div id="nescafe-time" class="last-updated"></div>
+      <span id="nescafe-status" class="badge b-gray">Not Updated</span>
+      <div id="nescafe-comm" class="comm-badge comm-none">⬜ No votes yet</div>
+      <div id="nescafe-votes" class="vote-chip"></div>
+      <div id="nescafe-pending" class="vote-chip"></div>
+      <div id="nescafe-time" class="time-chip"></div>
     </div>
 
-    <!-- Nandini Card -->
-    <div class="card" onclick="openModal('nandini')">
-      <div class="card-header">
+    <!-- NANDINI -->
+    <div class="card" id="nandini-card" onclick="openModal('nandini')">
+      <div class="card-head">
         <span class="card-title">🥛 Nandini</span>
         <span class="card-icon">🧃</span>
       </div>
-      <div id="nandini-status" class="status not-updated">Click to update</div>
-      <div id="nandini-votes" class="votes-info"></div>
-      <div id="nandini-pending" class="votes-info"></div>
-      <div id="nandini-time" class="last-updated"></div>
+      <span id="nandini-status" class="badge b-gray">Not Updated</span>
+      <div id="nandini-comm" class="comm-badge comm-none">⬜ No votes yet</div>
+      <div id="nandini-votes" class="vote-chip"></div>
+      <div id="nandini-pending" class="vote-chip"></div>
+      <div id="nandini-time" class="time-chip"></div>
     </div>
 
-    <!-- Badminton Card -->
-    <div class="card" onclick="openModal('badminton')">
-      <div class="card-header">
+    <!-- BADMINTON -->
+    <div class="card" id="badminton-card" onclick="openModal('badminton')">
+      <div class="card-head">
         <span class="card-title">🏸 Badminton</span>
         <span class="card-icon">🎾</span>
       </div>
-      <div id="badminton-status" class="status not-updated">Click to update</div>
-      <div id="badminton-votes" class="votes-info"></div>
-      <div id="badminton-pending" class="votes-info"></div>
-      <div id="badminton-time" class="last-updated"></div>
+      <span id="badminton-status" class="badge b-gray">Not Updated</span>
+      <div id="badminton-comm" class="comm-badge comm-none">⬜ No votes yet</div>
+      <div id="badminton-votes" class="vote-chip"></div>
+      <div id="badminton-pending" class="vote-chip"></div>
+      <div id="badminton-time" class="time-chip"></div>
     </div>
 
-    <!-- Suggestions Card -->
+    <!-- SUGGESTIONS -->
     <div class="card" onclick="openModal('suggestions')">
-      <div class="card-header">
-        <span class="card-title">💡 Suggestions</span>
+      <div class="card-head">
+        <span class="card-title">💡 Suggest</span>
         <span class="card-icon">📝</span>
       </div>
-      <div class="status neutral">Click to submit or view</div>
-      <div class="last-updated" id="suggestions-count"></div>
+      <span class="badge b-purple">Fixes & Ideas</span>
+      <div id="suggestions-count" class="time-chip"></div>
+    </div>
+  </div>
+
+  <!-- IMMEDIATE UPDATES -->
+  <div class="imm-section" id="imm-section" style="display:none;">
+    <div class="imm-head">🔴 Immediate Updates <span style="font-size:0.6em;color:#78350f;font-weight:400;margin-left:4px;">crowd-verified</span></div>
+    <div id="imm-posts"></div>
+  </div>
+
+  <!-- HEARTBEAT ZONE -->
+  <div class="hb-section">
+    <div class="hb-head">
+      <div class="hb-title"><div class="pulse-dot"></div>Heartbeat Zone</div>
+      <span style="font-size:0.68em;color:#7f3040;">anonymous · incubation</span>
+    </div>
+    <div class="hb-rules">
+      <strong>📋 How Heartbeat works:</strong>
+      • Post anonymously (max 80 chars)<br>
+      • Reaches <strong style="color:#ff758c;">5 upvotes</strong> → graduates to 🔴 Immediate Updates<br>
+      • Auto-deletes in <strong style="color:#ff758c;">10 minutes</strong> if under 5 upvotes<br>
+      • Use for urgent signals, crowd alerts, campus sightings<br>
+      • <span style="color:#994455;">One upvote per person per post</span>
+    </div>
+    <div class="hb-input-row">
+      <input class="hb-input" id="hb-text" maxlength="80" placeholder="What's happening right now..." oninput="updateCharCount()">
+      <button class="btn-hb" onclick="submitHeartbeat()">Post</button>
+    </div>
+    <div class="char-ct" id="char-ct">0 / 80</div>
+    <div class="hb-feed" id="hb-feed">
+      <div class="hb-empty">No active posts · be the first</div>
     </div>
   </div>
 </div>
 
 <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
 
-<!-- Modal -->
-<div class="modal" id="modal">
-  <div class="modal-content" id="modal-content">
-  </div>
+<!-- MODAL -->
+<div class="modal" id="modal" onclick="bgClose(event)">
+  <div class="modal-box" id="modal-box"></div>
 </div>
 
 <script>
-
-// ---------- FIREBASE ----------
+// ── FIREBASE ──────────────────────────────────────────────
 firebase.initializeApp({
-  apiKey: "AIzaSyBeVAkgLuLzq6uYo6M5begEMi_jwi-nAoU",
-  authDomain: "fundbaseu-tracker.firebaseapp.com",
-  databaseURL: "https://fundbaseu-tracker-default-rtdb.firebaseio.com",
-  projectId: "fundbaseu-tracker"
+  apiKey:"AIzaSyBeVAkgLuLzq6uYo6M5begEMi_jwi-nAoU",
+  authDomain:"fundbaseu-tracker.firebaseapp.com",
+  databaseURL:"https://fundbaseu-tracker-default-rtdb.firebaseio.com",
+  projectId:"fundbaseu-tracker"
 });
 var db = firebase.database();
 
-// Presence - Live Users
-var p = db.ref("presence").push();
-p.set(true);
-p.onDisconnect().remove();
-db.ref("presence").on("value", s => {
-  document.getElementById("liveCount").innerText = s.numChildren();
+// presence
+var presRef = db.ref("presence").push();
+presRef.set(true); presRef.onDisconnect().remove();
+db.ref("presence").on("value", s => { document.getElementById("liveCount").innerText = s.numChildren(); });
+
+// total visitors
+db.ref("totalVisitors").transaction(c => (c||0)+1);
+db.ref("totalVisitors").on("value", s => { document.getElementById("totalVisitors").innerText = s.val()||0; });
+
+// device id
+var devId = localStorage.getItem("deviceId");
+if (!devId) { devId='dev_'+Math.random().toString(36).substr(2,9); localStorage.setItem("deviceId",devId); }
+
+const THRESH = 3, THRESH_BAD = 2, HB_VOTES = 5, HB_TTL = 600000; // 10 min
+
+// ── LIVE ACTIVITY TICKER ──────────────────────────────────
+db.ref("activityLog").orderByChild("ts").limitToLast(20).on("value", snap => {
+  const items = [];
+  snap.forEach(c => items.push(c.val()));
+  if (!items.length) return;
+  // build duplicated items for seamless scroll
+  const html = [...items].reverse().map(a =>
+    `<span class="tick-item"><b>${tstamp(a.ts)}</b> ${esc(a.msg)}</span>`
+  ).join('');
+  const track = document.getElementById("ticker-track");
+  track.innerHTML = html + html; // duplicate for loop
 });
 
-// Total Visitors Counter
-var visitorsRef = db.ref("totalVisitors");
-visitorsRef.transaction(function(current) {
-  return (current || 0) + 1;
-});
-
-visitorsRef.on("value", snap => {
-  document.getElementById("totalVisitors").innerText = snap.val() || 0;
-});
-
-// Device ID
-var deviceId = localStorage.getItem("deviceId");
-if (!deviceId) {
-  deviceId = 'dev_' + Math.random().toString(36).substr(2, 9);
-  localStorage.setItem("deviceId", deviceId);
-}
-
-const THRESHOLD_DEFAULT = 3;
-const THRESHOLD_BADMINTON = 2;
-
-// ---------- MESS MENU ENGINE ----------
-
-// Breakfast alternates based on week pattern (1+3 vs 2+4)
-const breakfastMenu = {
-  Week13: {  // Weeks 1 and 3 of month
-    Monday: "Vada + Sambar + Chutney + Shavige",
-    Tuesday: "Poha + Fruits + Chowchow Bath + Chutney",
-    Wednesday: "Plain Dosa + Aloo + Chutney + Egg",
-    Thursday: "Bisi Belle Bath + Bread Jam + Fruits",
-    Friday: "Green Moong Dosa + Oats + Chutney",
-    Saturday: "Tomato Bath + Puliyogare + Chutney",
-    Sunday: "Masala Dosa + Aloo + Chutney"
-  },
-  Week24: {  // Weeks 2 and 4 of month
-    Monday: "Millets Khichdi + Vada + Sambar + Chutney + Idly",
-    Tuesday: "Lemon Rice + Bread Jam + Fruits + Chutney",
-    Wednesday: "Ragi Dosa + Dalia + Tomato Chutney + Egg",
-    Thursday: "Onion Uthappam + Mangalore Bajji + Chutney",
-    Friday: "Dal Khichdi + Dosa + Chutney",
-    Saturday: "Pongal + Bread Jam + Fruits + Chutney",
-    Sunday: "Set Dosa + Chutney"
-  }
-};
-
-// Lunch, Snacks, Dinner from the photo
-const dailyMenu = {
-  Monday: {
-    Lunch: "Poori or Ragi Ball + Rice + Drumstick + Channa + Curd",
-    Snacks: "Cutlet + Tea",
-    Dinner: "Dal Makhni + Rice + Dal + Veg"
-  },
-  Tuesday: {
-    Lunch: "Methi Chapathi + Rice + Dal + Veg Pulav + Curd + Pickle",
-    Snacks: "Kabuli Husli + Tea",
-    Dinner: "Soyabean + Rice + Radish Sambhar Dal + Chapati"
-  },
-  Wednesday: {
-    Lunch: "Chapathi or Ragi Balls + Rice + Dal + Paneer + Sprouts Sambhar + Pickle + Papad",
-    Snacks: "Samosa + Tea",
-    Dinner: "Chapathi + Rice + Aloo + Rasam"
-  },
-  Thursday: {
-    Lunch: "Paratha + Rajma + Jeera Rice + Pudina Rice + Curd + Pickle",
-    Snacks: "Vada Pav + Tea",
-    Dinner: "Chapathi + Rice + Egg Curry + Dal Palak + Salad"
-  },
-  Friday: {
-    Lunch: "Palak Chapati + Bhindi Chole + Dal + Chicken Biryani + Veg + Curd + Pickle + Papad",
-    Snacks: "Bhel Puri + Tea",
-    Dinner: "Chapathi + Rice + Dal + Veg"
-  },
-  Saturday: {
-    Lunch: "Chapathi + Rice + Dal + Mix Veg Beans + Curd + Pickle",
-    Snacks: "Masala Vada + Tea",
-    Dinner: "Chapathi + Rice + Dal + Veg + Salad"
-  },
-  Sunday: {
-    Lunch: "Mushroom Biryani or Paneer Biryani + Salad",
-    Snacks: "Pav Bhaji + Tea",
-    Dinner: "Chapathi + Rice + Beetroot Palya + Veg"
-  }
-};
-
-const mealTimes = [
-  { name: "Breakfast", start: 450, end: 600 },   // 7:30 AM - 10:00 AM
-  { name: "Lunch", start: 750, end: 900 },       // 12:30 PM - 3:00 PM
-  { name: "Snacks", start: 1020, end: 1140 },    // 5:00 PM - 7:00 PM
-  { name: "Dinner", start: 1170, end: 1320 }     // 7:30 PM - 10:00 PM
-];
-
-const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-function getWeekPattern(date) {
-  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-  const weekOfMonth = Math.ceil((date.getDate() + firstDay.getDay()) / 7);
-  return (weekOfMonth === 1 || weekOfMonth === 3) ? "Week13" : "Week24";
-}
-
-function getNextMeal() {
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const currentDay = now.getDay();
-  
-  for (let meal of mealTimes) {
-    if (currentMinutes < meal.end) {
-      return {
-        date: now,
-        day: dayNames[currentDay],
-        meal: meal.name
-      };
+function logAct(msg) {
+  db.ref("activityLog").push({ msg, ts: Date.now() });
+  // prune to last 20
+  db.ref("activityLog").orderByChild("ts").once("value", snap => {
+    if (snap.numChildren() > 20) {
+      let i=0, del=[];
+      snap.forEach(c => { i++; if (i <= snap.numChildren()-20) del.push(c.key); });
+      del.forEach(k => db.ref("activityLog/"+k).remove());
     }
+  });
+}
+
+function tstamp(ts) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+}
+
+// ── COMMUNITY BADGE ───────────────────────────────────────
+function setCommunityBadge(place, voteCount, confirmed, thresh) {
+  var el = document.getElementById(place+"-comm");
+  if (!el) return;
+  if (confirmed) {
+    el.className = "comm-badge comm-confirmed";
+    el.innerHTML = "✅ Community Confirmed";
+  } else if (voteCount >= 1) {
+    el.className = "comm-badge comm-partial";
+    el.innerHTML = "⚠️ Awaiting confirmation ("+voteCount+"/"+(thresh||THRESH)+")";
+  } else {
+    el.className = "comm-badge comm-none";
+    el.innerHTML = "⬜ No votes yet";
   }
-  
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowDay = tomorrow.getDay();
-  
-  return {
-    date: tomorrow,
-    day: dayNames[tomorrowDay],
-    meal: "Breakfast"
-  };
+}
+
+// ── PUSH NOTIFICATIONS ────────────────────────────────────
+var notifsScheduled = false;
+
+function checkNotifSupport() {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "granted") {
+    document.getElementById("notif-banner").style.display = "none";
+    scheduleNotifs();
+  } else if (Notification.permission === "default") {
+    document.getElementById("notif-banner").classList.add("show");
+    document.getElementById("notif-status").textContent = "";
+  }
+}
+
+function requestNotifs() {
+  document.getElementById("notif-btn").textContent = "Requesting...";
+  Notification.requestPermission().then(perm => {
+    if (perm === "granted") {
+      document.getElementById("notif-banner").classList.remove("show");
+      scheduleNotifs();
+      showToast("🔔 Meal reminders enabled!");
+    } else {
+      document.getElementById("notif-status").textContent = "Permission denied. Enable in browser settings.";
+      document.getElementById("notif-btn").textContent = "Enable";
+    }
+  });
+}
+
+function scheduleNotifs() {
+  if (notifsScheduled) return;
+  notifsScheduled = true;
+  checkMealTime();
+  setInterval(checkMealTime, 60000);
+}
+
+var lastNotifKey = "";
+function checkMealTime() {
+  if (Notification.permission !== "granted") return;
+  var now = new Date();
+  var h = now.getHours(), m = now.getMinutes();
+  var key = h+":"+m;
+  if (key === lastNotifKey) return;
+
+  var meals = [
+    { h:7,  m:30, title:"🍳 Breakfast is served!", body:"Head to the mess — Breakfast is ready now!" },
+    { h:12, m:30, title:"🍽️ Lunch time!",          body:"Mess is open for Lunch. Don't miss it!" },
+    { h:17, m:0,  title:"☕ Snacks time!",           body:"Snacks are being served at the mess!" },
+    { h:19, m:30, title:"🌙 Dinner is ready!",       body:"Dinner is now being served at the mess!" }
+  ];
+  meals.forEach(function(meal) {
+    if (h === meal.h && m === meal.m) {
+      new Notification(meal.title, { body: meal.body });
+      lastNotifKey = key;
+      logAct("🔔 Meal notification sent: "+meal.title);
+    }
+  });
+}
+
+// ── MESS MENU ─────────────────────────────────────────────
+var bf13 = {
+  Monday:"Vada + Sambar + Chutney + Shavige",
+  Tuesday:"Poha + Fruits + Chowchow Bath + Chutney",
+  Wednesday:"Plain Dosa + Aloo + Chutney + Egg",
+  Thursday:"Bisi Belle Bath + Bread Jam + Fruits",
+  Friday:"Green Moong Dosa + Oats + Chutney",
+  Saturday:"Tomato Bath + Puliyogare + Chutney",
+  Sunday:"Masala Dosa + Aloo + Chutney"
+};
+var bf24 = {
+  Monday:"Millets Khichdi + Vada + Sambar + Chutney + Idly",
+  Tuesday:"Lemon Rice + Bread Jam + Fruits + Chutney",
+  Wednesday:"Ragi Dosa + Dalia + Tomato Chutney + Egg",
+  Thursday:"Onion Uthappam + Mangalore Bajji + Chutney",
+  Friday:"Dal Khichdi + Dosa + Chutney",
+  Saturday:"Pongal + Bread Jam + Fruits + Chutney",
+  Sunday:"Set Dosa + Chutney"
+};
+var dayMenu = {
+  Monday:   { Lunch:"Poori or Ragi Ball + Rice + Drumstick + Channa + Curd",                     Snacks:"Cutlet + Tea",      Dinner:"Dal Makhni + Rice + Dal + Veg" },
+  Tuesday:  { Lunch:"Methi Chapathi + Rice + Dal + Veg Pulav + Curd + Pickle",                   Snacks:"Kabuli Husli + Tea", Dinner:"Soyabean + Rice + Radish Sambhar Dal + Chapati" },
+  Wednesday:{ Lunch:"Chapathi or Ragi Balls + Rice + Dal + Paneer + Sprouts Sambhar + Pickle + Papad", Snacks:"Samosa + Tea",  Dinner:"Chapathi + Rice + Aloo + Rasam" },
+  Thursday: { Lunch:"Paratha + Rajma + Jeera Rice + Pudina Rice + Curd + Pickle",                Snacks:"Vada Pav + Tea",    Dinner:"Chapathi + Rice + Egg Curry + Dal Palak + Salad" },
+  Friday:   { Lunch:"Palak Chapati + Bhindi Chole + Dal + Chicken Biryani + Veg + Curd + Pickle + Papad", Snacks:"Bhel Puri + Tea", Dinner:"Chapathi + Rice + Dal + Veg" },
+  Saturday: { Lunch:"Chapathi + Rice + Dal + Mix Veg Beans + Curd + Pickle",                     Snacks:"Masala Vada + Tea",  Dinner:"Chapathi + Rice + Dal + Veg + Salad" },
+  Sunday:   { Lunch:"Mushroom Biryani or Paneer Biryani + Salad",                                Snacks:"Pav Bhaji + Tea",   Dinner:"Chapathi + Rice + Beetroot Palya + Veg" }
+};
+var DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+function weekPat(date) {
+  var fd = new Date(date.getFullYear(), date.getMonth(), 1);
+  var wk = Math.ceil((date.getDate()+fd.getDay())/7);
+  return (wk===1||wk===3) ? "w13" : "w24";
+}
+
+function nextMeal() {
+  var now = new Date(), h = now.getHours(), di = now.getDay(), day = DAYS[di];
+  if (h>=22) { var tm=new Date(now); tm.setDate(tm.getDate()+1); return {date:tm,day:DAYS[tm.getDay()],meal:"Breakfast"}; }
+  if (h>=18)  return {date:now,day:day,meal:"Dinner"};
+  if (h>=15)  return {date:now,day:day,meal:"Snacks"};
+  if (h>=10)  return {date:now,day:day,meal:"Lunch"};
+  return {date:now,day:day,meal:"Breakfast"};
 }
 
 function getMenu(date, day, meal) {
-  if (meal === "Breakfast") {
-    const weekPattern = getWeekPattern(date);
-    return breakfastMenu[weekPattern][day];
-  } else {
-    return dailyMenu[day][meal];
-  }
+  if (meal==="Breakfast") return (weekPat(date)==="w13"?bf13:bf24)[day];
+  return dayMenu[day][meal];
 }
 
-function updateMessDisplay() {
-  const nextMeal = getNextMeal();
-  const menu = getMenu(nextMeal.date, nextMeal.day, nextMeal.meal);
-  
-  document.getElementById("mess-meal").innerHTML = "Next: " + nextMeal.meal;
-  document.getElementById("mess-menu").innerHTML = menu;
+function updateMess() {
+  var n = nextMeal();
+  document.getElementById("mess-meal").textContent = "Next: "+n.meal;
+  document.getElementById("mess-menu").textContent = getMenu(n.date,n.day,n.meal);
+}
+updateMess(); setInterval(updateMess, 60000);
+
+// ── HEARTBEAT ─────────────────────────────────────────────
+function updateCharCount() {
+  var v = document.getElementById("hb-text").value, cc = document.getElementById("char-ct");
+  cc.textContent = v.length+" / 80";
+  cc.className = "char-ct"+(v.length>70?" warn":"")+(v.length>=80?" over":"");
 }
 
-updateMessDisplay();
-setInterval(updateMessDisplay, 60000);
+function submitHeartbeat() {
+  var text = document.getElementById("hb-text").value.trim();
+  if (!text) return alert("Please write something");
+  if (text.length>80) return alert("Max 80 characters");
+  db.ref("heartbeat").push({ text:text, ts:Date.now(), upvotes:0, graduated:false });
+  logAct("💗 Heartbeat posted: \""+text.substring(0,28)+(text.length>28?"…":"")+"\"");
+  document.getElementById("hb-text").value="";
+  document.getElementById("char-ct").textContent="0 / 80";
+}
 
-// ---------- SUGGESTIONS ----------
-function loadSuggestions() {
-  db.ref("suggestions").orderByChild("timestamp").limitToLast(20).on("value", snap => {
-    const count = snap.numChildren();
-    document.getElementById("suggestions-count").innerHTML = count + " suggestion(s) submitted";
+function upvote(postId) {
+  var k = "hbv_"+postId;
+  if (localStorage.getItem(k)) return showToast("Already upvoted this post");
+  localStorage.setItem(k,"1");
+  db.ref("heartbeat/"+postId).transaction(function(d) {
+    if (!d) return d;
+    d.upvotes = (d.upvotes||0)+1;
+    return d;
+  }, function(err, ok, snap) {
+    if (!snap) return;
+    var d = snap.val();
+    if (d && d.upvotes >= HB_VOTES && !d.graduated) {
+      db.ref("immediateUpdates").push({ text:d.text, ts:Date.now() });
+      db.ref("heartbeat/"+postId).update({ graduated:true });
+      logAct("🔴 Heartbeat graduated to Immediate Updates!");
+      setTimeout(function(){ db.ref("heartbeat/"+postId).remove(); }, 2500);
+    }
   });
 }
 
-loadSuggestions();
+function cleanHeartbeats() {
+  db.ref("heartbeat").once("value", function(snap) {
+    var now = Date.now();
+    snap.forEach(function(c) {
+      var d = c.val();
+      if (d && !d.graduated && (now-d.ts)>HB_TTL) db.ref("heartbeat/"+c.key).remove();
+    });
+  });
+}
+cleanHeartbeats(); setInterval(cleanHeartbeats, 30000);
 
-// ---------- MODAL ----------
+db.ref("heartbeat").on("value", function(snap) {
+  var feed = document.getElementById("hb-feed"), now = Date.now(), posts=[];
+  snap.forEach(function(c){ var d=c.val(); if(d&&!d.graduated) posts.push({id:c.key,...d}); });
+  posts.sort(function(a,b){ return b.ts-a.ts; });
+  if (!posts.length) { feed.innerHTML='<div class="hb-empty">No active posts · be the first</div>'; return; }
+  feed.innerHTML = posts.map(function(p) {
+    var voted = localStorage.getItem("hbv_"+p.id);
+    var rem = Math.max(0,HB_TTL-(now-p.ts));
+    var pct = (rem/HB_TTL)*100;
+    var mins = Math.ceil(rem/60000);
+    var uv = p.upvotes||0;
+    return '<div class="hb-post">'+
+      '<div style="flex:1;">'+
+        '<div class="hb-post-text">'+esc(p.text)+'</div>'+
+        '<div style="font-size:0.62em;color:#7f3040;margin-top:3px;">⏱ '+mins+'min left · '+uv+'/5 upvotes</div>'+
+        '<div class="timer-bar"><div class="timer-fill" style="width:'+pct+'%"></div></div>'+
+      '</div>'+
+      '<div class="hb-right">'+
+        '<button class="upvote-btn'+(voted?' voted':'')+'" onclick="'+(voted?'showToast(\'Already upvoted!\')':'upvote(\''+p.id+'\')')+'">👍 '+uv+'</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+});
+
+// Immediate updates
+db.ref("immediateUpdates").orderByChild("ts").limitToLast(10).on("value", function(snap) {
+  var sec = document.getElementById("imm-section"), con = document.getElementById("imm-posts");
+  var posts=[];
+  snap.forEach(function(c){ posts.push(c.val()); });
+  posts.reverse();
+  if (!posts.length) { sec.style.display="none"; return; }
+  sec.style.display="block";
+  con.innerHTML = posts.map(function(p){
+    return '<div class="imm-post">'+esc(p.text)+'<div class="imm-meta">🔴 Crowd verified · '+ago(p.ts)+'</div></div>';
+  }).join('');
+});
+
+// suggestions count
+db.ref("suggestions").on("value", function(snap) {
+  document.getElementById("suggestions-count").textContent = (snap.numChildren()||0)+" suggestion(s)";
+});
+
+// ── MODAL ─────────────────────────────────────────────────
 function openModal(place) {
-  let html = '<div class="modal-header">';
-  
-  if (place === 'mess') {
-    html += '🍽️ Mess Status</div>';
-    html += '<div class="button-group">';
-    html += '<button class="btn btn-available" onclick="vote(\'mess\', \'Food Available\')">Food Available</button>';
-    html += '<button class="btn btn-finished" onclick="vote(\'mess\', \'Food Not Available\')">Food Not Available</button>';
-    html += '</div>';
-  }
-  else if (place === 'gym') {
-    html += '🏋️ Gym Crowd</div>';
-    html += '<div class="button-group">';
-    html += '<button class="btn btn-available" onclick="updateGym(\'Below 3\')">Below 3 people (Free)</button>';
-    html += '<button class="btn btn-finished" onclick="updateGym(\'Above 3\')">Above 3 people (A little crowded)</button>';
-    html += '</div>';
-  }
-  else if (place === 'badminton') {
-    html += '🏸 Badminton Courts</div>';
-    html += '<div class="input-group">';
-    html += '<label>How many courts are occupied? (0-4)</label>';
-    html += '<input type="number" id="badminton-val" min="0" max="4" placeholder="Enter 0-4">';
-    html += '</div>';
-    html += '<button class="btn btn-available" onclick="voteBadminton()">Submit</button>';
-  }
-  else if (place === 'nescafe') {
-    html += '☕ Nescafé Status</div>';
-    html += '<div class="button-group">';
-    html += '<button class="btn btn-open" onclick="vote(\'nescafe\', \'Open\')">Open</button>';
-    html += '<button class="btn btn-closed" onclick="vote(\'nescafe\', \'Closed\')">Closed</button>';
-    html += '</div>';
-  }
-  else if (place === 'nandini') {
-    html += '🥛 Nandini Status</div>';
-    html += '<div class="button-group">';
-    html += '<button class="btn btn-open" onclick="vote(\'nandini\', \'Open\')">Open</button>';
-    html += '<button class="btn btn-closed" onclick="vote(\'nandini\', \'Closed\')">Closed</button>';
-    html += '</div>';
-  }
-  else if (place === 'suggestions') {
-    html += '💡 Suggestions & Fixes</div>';
-    html += '<div class="input-group">';
-    html += '<label>Share your suggestion or report an issue:</label>';
-    html += '<textarea id="suggestion-text" placeholder="Enter your suggestion or bug report here..."></textarea>';
-    html += '</div>';
-    html += '<button class="btn btn-available" onclick="submitSuggestion()">Submit</button>';
-    html += '<hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">';
-    html += '<h3 style="margin-bottom: 15px; color: #333;">Recent Suggestions:</h3>';
-    html += '<div class="suggestions-list" id="suggestions-display">Loading...</div>';
-    
-    // Load suggestions
-    setTimeout(function() {
-      db.ref("suggestions").orderByChild("timestamp").limitToLast(20).once("value", snap => {
-        let suggestionsList = '';
-        const suggestions = [];
-        snap.forEach(child => {
-          suggestions.push(child.val());
-        });
-        suggestions.reverse().forEach(sug => {
-          const timeAgo = getTimeAgo(sug.timestamp);
-          suggestionsList += '<div class="suggestion-item">';
-          suggestionsList += '<div class="suggestion-header"><span class="suggestion-time">' + timeAgo + '</span></div>';
-          suggestionsList += '<div class="suggestion-text">' + sug.text + '</div>';
-          suggestionsList += '</div>';
-        });
-        document.getElementById('suggestions-display').innerHTML = suggestionsList || '<p style="text-align:center;color:#666;">No suggestions yet</p>';
+  var h = '<div class="modal-head"><span>';
+  if (place==='mess') {
+    h+='🍽️ Mess Status</span><button class="modal-x" onclick="closeModal()">✕</button></div>';
+    h+='<div class="btn-stack">'+
+      '<button class="mbtn g" onclick="doVote(\'mess\',\'Food Available\')">✅ Food Available</button>'+
+      '<button class="mbtn r" onclick="doVote(\'mess\',\'Food Not Available\')">❌ Food Not Available</button>'+
+      '<button class="mbtn x" onclick="closeModal()">Close</button></div>';
+  } else if (place==='gym') {
+    h+='🏋️ Gym Status</span><button class="modal-x" onclick="closeModal()">✕</button></div>';
+    h+='<div class="btn-stack">'+
+      '<button class="mbtn g" onclick="doGym(\'Open · Free\')">✅ Open · Free (below 3)</button>'+
+      '<button class="mbtn a" onclick="doGym(\'Open · Crowded\')">⚠️ Open · Crowded (3+)</button>'+
+      '<button class="mbtn r" onclick="doGym(\'Closed\')">🔒 Closed</button>'+
+      '<button class="mbtn x" onclick="closeModal()">Close</button></div>';
+  } else if (place==='nescafe') {
+    h+='☕ Nescafé</span><button class="modal-x" onclick="closeModal()">✕</button></div>';
+    h+='<div class="btn-stack">'+
+      '<button class="mbtn g" onclick="doVote(\'nescafe\',\'Open\')">✅ Open</button>'+
+      '<button class="mbtn r" onclick="doVote(\'nescafe\',\'Closed\')">🔒 Closed</button>'+
+      '<button class="mbtn x" onclick="closeModal()">Close</button></div>';
+  } else if (place==='nandini') {
+    h+='🥛 Nandini</span><button class="modal-x" onclick="closeModal()">✕</button></div>';
+    h+='<div class="btn-stack">'+
+      '<button class="mbtn g" onclick="doVote(\'nandini\',\'Open\')">✅ Open</button>'+
+      '<button class="mbtn r" onclick="doVote(\'nandini\',\'Closed\')">🔒 Closed</button>'+
+      '<button class="mbtn x" onclick="closeModal()">Close</button></div>';
+  } else if (place==='badminton') {
+    h+='🏸 Badminton</span><button class="modal-x" onclick="closeModal()">✕</button></div>';
+    h+='<p style="color:#888;font-size:0.82em;margin-bottom:10px;">How many courts are FREE right now?</p>';
+    h+='<div class="btn-stack">'+
+      '<button class="mbtn g" onclick="doBad(\'4 Free\')">🟢 All 4 Courts Free</button>'+
+      '<button class="mbtn g" onclick="doBad(\'3 Free\')">🟢 3 Courts Free</button>'+
+      '<button class="mbtn a" onclick="doBad(\'2 Free\')">🟡 2 Courts Free</button>'+
+      '<button class="mbtn a" onclick="doBad(\'1 Free\')">🟡 1 Court Free</button>'+
+      '<button class="mbtn r" onclick="doBad(\'Full\')">🔴 All Courts Full</button>'+
+      '<button class="mbtn x" onclick="closeModal()">Close</button></div>';
+  } else if (place==='suggestions') {
+    h+='💡 Suggestions</span><button class="modal-x" onclick="closeModal()">✕</button></div>';
+    h+='<p style="color:#888;font-size:0.8em;margin-bottom:8px;">Share ideas or report bugs</p>';
+    h+='<textarea class="m-input" id="sug-txt" rows="4" placeholder="Enter suggestion or bug..."></textarea>';
+    h+='<div class="btn-stack"><button class="mbtn g" onclick="doSug()">Submit</button></div>';
+    h+='<hr style="border:none;border-top:1px solid #2a2a3e;margin:14px 0;">';
+    h+='<p style="color:#888;font-size:0.78em;margin-bottom:8px;">Recent:</p>';
+    h+='<div id="sug-list" style="max-height:220px;overflow-y:auto;"></div>';
+    h+='<button class="mbtn x" style="margin-top:10px;" onclick="closeModal()">Close</button>';
+    setTimeout(function(){
+      db.ref("suggestions").orderByChild("ts").limitToLast(10).once("value", function(snap){
+        var a=[]; snap.forEach(function(c){ a.push(c.val()); }); a.reverse();
+        var el=document.getElementById("sug-list"); if(!el) return;
+        el.innerHTML=a.length?a.map(function(s){
+          return '<div style="background:rgba(255,255,255,0.03);border:1px solid #2a2a3e;border-radius:9px;padding:9px;margin-bottom:7px;font-size:0.8em;color:#94a3b8;">'+
+            esc(s.text||s.msg||'')+'<div style="font-size:0.7em;color:#444;margin-top:3px;">'+ago(s.ts||s.timestamp)+'</div></div>';
+        }).join(''):'<p style="color:#444;text-align:center;">No suggestions yet</p>';
       });
-    }, 100);
+    },100);
   }
-  
-  html += '<button class="btn btn-close" onclick="closeModal()">Close</button>';
-  
-  document.getElementById("modal-content").innerHTML = html;
+  document.getElementById("modal-box").innerHTML=h;
   document.getElementById("modal").classList.add("active");
 }
+function closeModal(){ document.getElementById("modal").classList.remove("active"); }
+function bgClose(e){ if(e.target===document.getElementById("modal")) closeModal(); }
 
-function closeModal() {
-  document.getElementById("modal").classList.remove("active");
-}
-
-function submitSuggestion() {
-  const text = document.getElementById("suggestion-text").value.trim();
-  if (!text) return alert("Please enter a suggestion");
-  
-  db.ref("suggestions").push({
-    text: text,
-    timestamp: Date.now()
-  });
-  
-  alert("Thank you! Your suggestion has been submitted.");
-  closeModal();
-}
-
-function getTimeAgo(timestamp) {
-  const minutes = Math.floor((Date.now() - timestamp) / 60000);
-  if (minutes < 1) return "Just now";
-  if (minutes === 1) return "1 minute ago";
-  if (minutes < 60) return minutes + " minutes ago";
-  const hours = Math.floor(minutes / 60);
-  if (hours === 1) return "1 hour ago";
-  if (hours < 24) return hours + " hours ago";
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "1 day ago";
-  return days + " days ago";
-}
-
-// ---------- VOTING ----------
-function vote(place, value) {
-  if (!value) return alert("Please select an option");
-
-  var deviceRef = db.ref(place + "_deviceVotes/" + deviceId);
-  deviceRef.once("value", snap => {
-    if (snap.exists()) return alert("You already voted.");
-
-    var voteRef = db.ref(place + "_votes/" + value);
-    voteRef.transaction(c => (c || 0) + 1, function(e, committed, snap) {
-      if (!snap) return;
-      var votes = snap.val();
-      var threshold = THRESHOLD_DEFAULT;
-      var remaining = threshold - votes;
-
-      if (votes >= threshold) {
-        db.ref(place).set({ status: value, timestamp: Date.now() });
-        db.ref(place + "_votes").remove();
-        db.ref(place + "_pending").remove();
-        db.ref(place + "_deviceVotes").remove();
-        alert("Status updated successfully!");
+// ── VOTING ────────────────────────────────────────────────
+function doVote(place, value) {
+  db.ref(place+"_deviceVotes/"+devId).once("value", function(snap) {
+    if (snap.exists()) return showToast("Already voted for "+place);
+    db.ref(place+"_votes/"+value).transaction(function(c){ return (c||0)+1; }, function(e,ok,sn) {
+      if (!sn) return;
+      var v=sn.val(), rem=THRESH-v;
+      if (v>=THRESH) {
+        db.ref(place).set({status:value,ts:Date.now()});
+        db.ref(place+"_votes").remove();
+        db.ref(place+"_pending").remove();
+        db.ref(place+"_deviceVotes").remove();
+        logAct("✅ "+THRESH+" votes confirmed "+place+" → "+value);
+        showToast("✅ Community confirmed!");
       } else {
-        db.ref(place + "_pending").set({ message: "Awaiting " + remaining + " more confirmation(s)" });
-        alert("Vote recorded! Need " + remaining + " more confirmation(s)");
+        db.ref(place+"_pending").set({message:"Awaiting "+rem+" more confirmation(s)",voteCount:v});
+        logAct("🗳️ Vote on "+place+" ("+v+"/"+THRESH+"): "+value);
+        showToast("Vote recorded! "+rem+" more needed.");
       }
     });
-    deviceRef.set(true);
+    db.ref(place+"_deviceVotes/"+devId).set(true);
   });
   closeModal();
 }
 
-function updateGym(status) {
-  db.ref("gym").set({ status: status, timestamp: Date.now() });
-  alert("Gym status updated!");
+function doGym(status) {
+  db.ref("gym").set({status:status,ts:Date.now()});
+  logAct("🏋️ Gym updated → "+status);
+  showToast("Gym updated!");
   closeModal();
 }
 
-function voteBadminton() {
-  const value = document.getElementById("badminton-val").value;
-  if (!value || value < 0 || value > 4) return alert("Please enter a number between 0-4");
-
-  var deviceRef = db.ref("badminton_deviceVotes/" + deviceId);
-  deviceRef.once("value", snap => {
-    if (snap.exists()) return alert("You already voted.");
-
-    var voteRef = db.ref("badminton_votes/" + value);
-    voteRef.transaction(c => (c || 0) + 1, function(e, committed, snap) {
-      if (!snap) return;
-      var votes = snap.val();
-      var threshold = THRESHOLD_BADMINTON;
-      var remaining = threshold - votes;
-
-      if (votes >= threshold) {
-        db.ref("badminton").set({ count: parseInt(value), timestamp: Date.now() });
+function doBad(value) {
+  db.ref("badminton_deviceVotes/"+devId).once("value", function(snap) {
+    if (snap.exists()) return showToast("Already voted for Badminton");
+    db.ref("badminton_votes/"+value).transaction(function(c){ return (c||0)+1; }, function(e,ok,sn) {
+      if (!sn) return;
+      var v=sn.val(), rem=THRESH_BAD-v;
+      if (v>=THRESH_BAD) {
+        db.ref("badminton").set({status:value,ts:Date.now()});
         db.ref("badminton_votes").remove();
         db.ref("badminton_pending").remove();
         db.ref("badminton_deviceVotes").remove();
-        alert("Status updated successfully!");
+        logAct("✅ Badminton confirmed → "+value);
+        showToast("✅ Courts confirmed!");
       } else {
-        db.ref("badminton_pending").set({ message: "Awaiting " + remaining + " more confirmation(s)" });
-        alert("Vote recorded! Need " + remaining + " more confirmation(s)");
+        db.ref("badminton_pending").set({message:"Awaiting "+rem+" more confirmation(s)",voteCount:v});
+        logAct("🏸 Badminton vote ("+v+"/"+THRESH_BAD+"): "+value);
+        showToast("Vote recorded! "+rem+" more needed.");
       }
     });
-    deviceRef.set(true);
+    db.ref("badminton_deviceVotes/"+devId).set(true);
   });
   closeModal();
 }
 
-function timeAgo(ts) {
-  if (!ts) return "";
-  var m = Math.floor((Date.now() - ts) / 60000);
-  if (m < 1) return "Updated just now";
-  if (m === 1) return "Updated 1 min ago";
-  if (m < 60) return "Updated " + m + " min ago";
-  const h = Math.floor(m / 60);
-  if (h === 1) return "Updated 1 hour ago";
-  return "Updated " + h + " hours ago";
+function doSug() {
+  var t = (document.getElementById("sug-txt")||{}).value||"";
+  t=t.trim(); if(!t) return alert("Please enter something");
+  db.ref("suggestions").push({text:t,ts:Date.now()});
+  logAct("💡 New suggestion submitted");
+  showToast("Thanks! Suggestion submitted.");
+  closeModal();
 }
 
-// ---------- LISTENERS ----------
-['mess', 'nescafe', 'nandini', 'badminton', 'gym'].forEach(place => {
-  db.ref(place).on("value", snap => {
-    var d = snap.val();
-    var statusEl = document.getElementById(place + '-status');
-    var timeEl = document.getElementById(place + '-time');
-    
-    if (!d) {
-      if (place === 'mess') {
-        document.getElementById('mess-card').className = 'card';
-        document.getElementById('mess-availability').innerHTML = 'Click to update';
-        document.getElementById('mess-availability').className = 'status not-updated';
-      } else if (statusEl) {
-        statusEl.className = "status not-updated";
-        statusEl.innerHTML = "Click to update";
-      }
-      if (timeEl) timeEl.innerHTML = "";
-      return;
-    }
+// ── FIREBASE LISTENERS ────────────────────────────────────
 
-    if (place === 'badminton') {
-      if (statusEl) {
-        statusEl.innerHTML = d.count + "/4 Courts Occupied";
-        statusEl.className = 'status neutral';
-      }
-      if (timeEl) timeEl.innerHTML = timeAgo(d.timestamp);
-    }
-    else if (place === 'gym') {
-      if (statusEl) {
-        if (d.status === 'Below 3') {
-          statusEl.innerHTML = 'Free';
-          statusEl.className = 'status free';
-        } else {
-          statusEl.innerHTML = 'A little crowded';
-          statusEl.className = 'status crowded';
-        }
-      }
-      if (timeEl) timeEl.innerHTML = timeAgo(d.timestamp);
-    }
-    else if (place === 'mess') {
-      const messCard = document.getElementById('mess-card');
-      const availEl = document.getElementById('mess-availability');
-      
-      if (d.status === 'Food Available') {
-        messCard.className = 'card food-available';
-        availEl.innerHTML = '✓ Food Available';
-        availEl.className = 'status';
-      } else {
-        messCard.className = 'card food-finished';
-        availEl.innerHTML = '✗ Food Not Available';
-        availEl.className = 'status';
-      }
-      if (timeEl) timeEl.innerHTML = timeAgo(d.timestamp);
-    }
-    else {
-      if (statusEl) {
-        statusEl.innerHTML = d.status;
-        statusEl.className = d.status === 'Open' ? 'status open' : 'status closed';
-      }
-      if (timeEl) timeEl.innerHTML = timeAgo(d.timestamp);
-    }
-  });
-
-  if (place !== 'gym') {
-    db.ref(place + "_votes").on("value", snap => {
-      var total = 0;
-      snap.forEach(c => total += c.val());
-      var votesEl = document.getElementById(place + '-votes');
-      if (votesEl) votesEl.innerHTML = total > 0 ? "Votes: " + total : "";
-    });
-    
-    db.ref(place + "_pending").on("value", snap => {
-      var pendingEl = document.getElementById(place + '-pending');
-      if (pendingEl) pendingEl.innerHTML = snap.val() ? snap.val().message : "";
-    });
+// MESS
+db.ref("mess").on("value", function(snap) {
+  var d=snap.val(), card=document.getElementById("mess-card"),
+      av=document.getElementById("mess-avail"), tEl=document.getElementById("mess-time");
+  if (!d) {
+    card.className="card"; av.className="badge b-gray"; av.textContent="Not Updated";
+    setCommunityBadge("mess",0,false,THRESH); if(tEl) tEl.textContent=""; return;
   }
+  if (d.status==="Food Available") {
+    card.className="card food-yes"; av.className="badge b-green"; av.textContent="✅ Food Available";
+  } else {
+    card.className="card food-no"; av.className="badge b-red"; av.textContent="❌ Food Not Available";
+  }
+  setCommunityBadge("mess", THRESH, true, THRESH);
+  if(tEl) tEl.textContent=ago(d.ts||d.timestamp);
+});
+db.ref("mess_votes").on("value", function(snap) {
+  var t=0; snap.forEach(function(c){t+=c.val();}); 
+  var el=document.getElementById("mess-votes"); if(el) el.textContent=t>0?"Votes: "+t:"";
+  setCommunityBadge("mess",t,false,THRESH);
+});
+db.ref("mess_pending").on("value", function(snap) {
+  var el=document.getElementById("mess-pending"); if(el) el.textContent=snap.val()?snap.val().message:"";
 });
 
+// GYM
+db.ref("gym").on("value", function(snap) {
+  var d=snap.val(), card=document.getElementById("gym-card"),
+      el=document.getElementById("gym-status"), tEl=document.getElementById("gym-time");
+  if (!d) { card.className="card"; el.className="badge b-gray"; el.textContent="Not Updated"; if(tEl) tEl.textContent=""; return; }
+  if (d.status==="Open · Free")    { card.className="card gym-free";  el.className="badge b-green"; el.textContent="✅ Open · Free"; }
+  else if (d.status==="Open · Crowded") { card.className="card gym-busy"; el.className="badge b-amber"; el.textContent="⚠️ Open · Crowded"; }
+  else { card.className="card gym-shut"; el.className="badge b-red"; el.textContent="🔒 Closed"; }
+  if(tEl) tEl.textContent=ago(d.ts||d.timestamp);
+});
+
+// NESCAFE
+db.ref("nescafe").on("value", function(snap) {
+  var d=snap.val(), card=document.getElementById("nescafe-card"),
+      el=document.getElementById("nescafe-status"), tEl=document.getElementById("nescafe-time");
+  if (!d) { card.className="card"; el.className="badge b-gray"; el.textContent="Not Updated"; setCommunityBadge("nescafe",0,false,THRESH); if(tEl) tEl.textContent=""; return; }
+  if (d.status==="Open") { card.className="card shop-open"; el.className="badge b-green"; el.textContent="✅ Open"; }
+  else { card.className="card shop-shut"; el.className="badge b-red"; el.textContent="🔒 Closed"; }
+  setCommunityBadge("nescafe",THRESH,true,THRESH);
+  if(tEl) tEl.textContent=ago(d.ts||d.timestamp);
+});
+db.ref("nescafe_votes").on("value", function(snap) {
+  var t=0; snap.forEach(function(c){t+=c.val();});
+  var el=document.getElementById("nescafe-votes"); if(el) el.textContent=t>0?"Votes: "+t:"";
+  setCommunityBadge("nescafe",t,false,THRESH);
+});
+db.ref("nescafe_pending").on("value", function(snap) {
+  var el=document.getElementById("nescafe-pending"); if(el) el.textContent=snap.val()?snap.val().message:"";
+});
+
+// NANDINI
+db.ref("nandini").on("value", function(snap) {
+  var d=snap.val(), card=document.getElementById("nandini-card"),
+      el=document.getElementById("nandini-status"), tEl=document.getElementById("nandini-time");
+  if (!d) { card.className="card"; el.className="badge b-gray"; el.textContent="Not Updated"; setCommunityBadge("nandini",0,false,THRESH); if(tEl) tEl.textContent=""; return; }
+  if (d.status==="Open") { card.className="card shop-open"; el.className="badge b-green"; el.textContent="✅ Open"; }
+  else { card.className="card shop-shut"; el.className="badge b-red"; el.textContent="🔒 Closed"; }
+  setCommunityBadge("nandini",THRESH,true,THRESH);
+  if(tEl) tEl.textContent=ago(d.ts||d.timestamp);
+});
+db.ref("nandini_votes").on("value", function(snap) {
+  var t=0; snap.forEach(function(c){t+=c.val();});
+  var el=document.getElementById("nandini-votes"); if(el) el.textContent=t>0?"Votes: "+t:"";
+  setCommunityBadge("nandini",t,false,THRESH);
+});
+db.ref("nandini_pending").on("value", function(snap) {
+  var el=document.getElementById("nandini-pending"); if(el) el.textContent=snap.val()?snap.val().message:"";
+});
+
+// BADMINTON
+db.ref("badminton").on("value", function(snap) {
+  var d=snap.val(), el=document.getElementById("badminton-status"), tEl=document.getElementById("badminton-time");
+  if (!d||!el) { setCommunityBadge("badminton",0,false,THRESH_BAD); return; }
+  var st=d.status||"Not Updated";
+  var bc = st==="Full"?"b-red":st.includes("1")||st.includes("2")?"b-amber":"b-green";
+  el.className="badge "+bc; el.textContent=st;
+  setCommunityBadge("badminton",THRESH_BAD,true,THRESH_BAD);
+  if(tEl) tEl.textContent=ago(d.ts||d.timestamp);
+});
+db.ref("badminton_votes").on("value", function(snap) {
+  var t=0; snap.forEach(function(c){t+=c.val();});
+  var el=document.getElementById("badminton-votes"); if(el) el.textContent=t>0?"Votes: "+t:"";
+  setCommunityBadge("badminton",t,false,THRESH_BAD);
+});
+db.ref("badminton_pending").on("value", function(snap) {
+  var el=document.getElementById("badminton-pending"); if(el) el.textContent=snap.val()?snap.val().message:"";
+});
+
+// ── HELPERS ───────────────────────────────────────────────
+function ago(ts) {
+  if (!ts) return "";
+  var m=Math.floor((Date.now()-ts)/60000);
+  if (m<1) return "just now";
+  if (m===1) return "1 min ago";
+  if (m<60) return m+" min ago";
+  var h=Math.floor(m/60);
+  if (h===1) return "1 hr ago";
+  if (h<24) return h+" hrs ago";
+  return Math.floor(h/24)+"d ago";
+}
+function esc(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function showToast(msg) {
+  var t=document.getElementById("toast");
+  t.textContent=msg; t.style.opacity="1";
+  clearTimeout(t._tid);
+  t._tid=setTimeout(function(){ t.style.opacity="0"; },2800);
+}
+
+// ── INIT ──────────────────────────────────────────────────
+checkNotifSupport();
 </script>
 </body>
 </html>
