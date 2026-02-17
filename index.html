@@ -993,3 +993,44 @@ initNotif();
   if (!isStandaloneMode()) showInstallBtn(true);
 })();
 </script>
+<script>
+(function () {
+  
+  
+  // Create Campus Uno link below the existing FundBASEU Updates link
+  var updatesLink = document.querySelector('a.upd-link');
+  if (!updatesLink) return;
+
+  // Add CSS once
+  if (!document.getElementById('cu-link-style')) {
+    var style = document.createElement('style');
+    style.id = 'cu-link-style';
+    style.textContent = `
+      .cu-link{
+        display:inline-block;
+        margin-top:8px;
+        color:#60a5fa;
+        text-decoration:none;
+        font-size:0.8em;
+        font-weight:700;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Prevent duplicate insertion
+  if (document.querySelector('a.cu-link')) return;
+
+  // Insert line break + Campus Uno link right under FundBASEU Updates
+  var br = document.createElement('br');
+  var campusLink = document.createElement('a');
+  campusLink.href = 'https://campus.uno/';
+  campusLink.target = '_blank';
+  campusLink.rel = 'noopener noreferrer';
+  campusLink.className = 'cu-link';
+  campusLink.textContent = '🎓 Go to Campus Uno →';
+
+  updatesLink.insertAdjacentElement('afterend', br);
+  br.insertAdjacentElement('afterend', campusLink);
+})();
+</script>
