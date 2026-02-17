@@ -594,6 +594,108 @@ body.light-theme .card[style*="linear-gradient"]{
   background:var(--bg-card) !important;
 }
 
+/* ═══ FOOTER ═══ */
+.site-footer{
+  margin-top:28px;
+  padding-bottom:10px;
+}
+
+.footer-divider{
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--border-main),var(--border-main),transparent);
+  margin-bottom:20px;
+}
+
+.footer-inner{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+  text-align:center;
+}
+
+.footer-brand{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+}
+
+.footer-logo-text{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:1em;
+  font-weight:800;
+  background:linear-gradient(135deg,#a78bfa,#60a5fa,#34d399);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  letter-spacing:-0.3px;
+}
+
+.footer-tagline{
+  font-size:0.65em;
+  color:var(--text-faint);
+  font-weight:500;
+  letter-spacing:0.3px;
+}
+
+.footer-meta{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+}
+
+.footer-devs{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.footer-dev-label{
+  font-size:0.7em;
+  color:var(--text-muted);
+  font-weight:500;
+}
+
+.footer-dev-names{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.dev-chip{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:0.72em;
+  font-weight:700;
+  padding:3px 11px;
+  border-radius:20px;
+  background:rgba(139,92,246,0.1);
+  border:1px solid rgba(139,92,246,0.25);
+  color:#a78bfa;
+}
+
+body.light-theme .dev-chip{
+  background:rgba(139,92,246,0.08);
+  border-color:rgba(139,92,246,0.2);
+  color:#7c3aed;
+}
+
+.footer-amp{
+  font-size:0.7em;
+  color:var(--text-faint);
+  font-weight:600;
+}
+
+.footer-copy{
+  font-size:0.63em;
+  color:var(--text-faint);
+  font-weight:500;
+  letter-spacing:0.2px;
+}
+
 /* ═══ MOBILE ═══ */
 @media(max-width:399px){
   body{padding:10px 10px 100px;}
@@ -871,6 +973,29 @@ if(localStorage.getItem("theme")==="dark") document.body.classList.remove("light
     <div class="chct" id="chct">0 / 80</div>
     <div class="hb-feed" id="hb-feed"><div class="hb-empty">No active posts · be the first</div></div>
   </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-divider"></div>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="footer-logo-text">FundBASEU</span>
+        <span class="footer-tagline">Campus Intelligence Platform</span>
+      </div>
+      <div class="footer-meta">
+        <div class="footer-devs">
+          <span class="footer-dev-label">Built by</span>
+          <span class="footer-dev-names">
+            <span class="dev-chip">Vardhan</span>
+            <span class="footer-amp">&amp;</span>
+            <span class="dev-chip">Athul</span>
+          </span>
+        </div>
+        <div class="footer-copy">© 2026 FundBASEU · All Rights Reserved</div>
+      </div>
+    </div>
+  </footer>
+
 </div>
 
 <button class="ref-btn" onclick="location.reload()">🔄 Refresh</button>
