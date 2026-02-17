@@ -487,7 +487,8 @@ function doVote(place, value, thresh){
         if(err||!ok||!sn){ dvRef.remove(); return toast("Error voting, try again"); }
         var count=sn.val(), rem=thresh-count;
         if(count>=thresh){
-          db.ref(place).set({status:value,ts:Date.now()},function(){
+          console.log("CONFIRMING:", place, value);
+            db.ref(place).set({status:value,ts:Date.now()},function(){
             db.ref(place+"_voteCount").remove();
             db.ref(place+"_votedFor").remove();
             db.ref(place+"_dv").remove();
@@ -541,6 +542,7 @@ function listenPlace(place, thresh, onStatus){
 
 // MESS
 listenPlace("mess",T_MESS,function(d){
+  console.log("MESS LISTENER FIRED:", d);
   var av=ge("mess-avail"),tEl=ge("mess-ts");
 
   if(!d){
