@@ -885,13 +885,19 @@ function doSug() {
 // ── FIREBASE LISTENERS ────────────────────────────────────
 
 // MESS
+// track confirmed state so votes listener never overrides it
+var messConfirmed = false;
+
 db.ref("mess").on("value", function(snap) {
   var d=snap.val(), card=document.getElementById("mess-card"),
       av=document.getElementById("mess-avail"), tEl=document.getElementById("mess-time");
   if (!d) {
+    messConfirmed = false;
     card.className="card"; av.className="badge b-gray"; av.textContent="Not Updated";
     setCommunityBadge("mess",0,false,THRESH); if(tEl) tEl.textContent=""; return;
   }
+  // status exists means it was confirmed by votes reaching threshold
+  messConfirmed = true;
   if (d.status==="Food Available") {
     card.className="card food-yes"; av.className="badge b-green"; av.textContent="✅ Food Available";
   } else {
@@ -901,12 +907,15 @@ db.ref("mess").on("value", function(snap) {
   if(tEl) tEl.textContent=ago(d.ts||d.timestamp);
 });
 db.ref("mess_votes").on("value", function(snap) {
-  var t=0; snap.forEach(function(c){t+=c.val();}); 
+  var t=0; snap.forEach(function(c){t+=c.val();});
   var el=document.getElementById("mess-votes"); if(el) el.textContent=t>0?"Votes: "+t:"";
-  setCommunityBadge("mess",t,false,THRESH);
+  // only update community badge from votes if not already confirmed
+  if (!messConfirmed) setCommunityBadge("mess",t,false,THRESH);
 });
 db.ref("mess_pending").on("value", function(snap) {
-  var el=document.getElementById("mess-pending"); if(el) el.textContent=snap.val()?snap.val().message:"";
+  var el=document.getElementById("mess-pending");
+  // only show pending message if not confirmed
+  if(el) el.textContent=(!messConfirmed && snap.val()) ? snap.val().message : "";
 });
 
 // GYM
@@ -921,10 +930,12 @@ db.ref("gym").on("value", function(snap) {
 });
 
 // NESCAFE
+var nescafeConfirmed = false;
 db.ref("nescafe").on("value", function(snap) {
   var d=snap.val(), card=document.getElementById("nescafe-card"),
       el=document.getElementById("nescafe-status"), tEl=document.getElementById("nescafe-time");
-  if (!d) { card.className="card"; el.className="badge b-gray"; el.textContent="Not Updated"; setCommunityBadge("nescafe",0,false,THRESH); if(tEl) tEl.textContent=""; return; }
+  if (!d) { nescafeConfirmed=false; card.className="card"; el.className="badge b-gray"; el.textContent="Not Updated"; setCommunityBadge("nescafe",0,false,THRESH); if(tEl) tEl.textContent=""; return; }
+  nescafeConfirmed = true;
   if (d.status==="Open") { card.className="card shop-open"; el.className="badge b-green"; el.textContent="✅ Open"; }
   else { card.className="card shop-shut"; el.className="badge b-red"; el.textContent="🔒 Closed"; }
   setCommunityBadge("nescafe",THRESH,true,THRESH);
@@ -933,17 +944,19 @@ db.ref("nescafe").on("value", function(snap) {
 db.ref("nescafe_votes").on("value", function(snap) {
   var t=0; snap.forEach(function(c){t+=c.val();});
   var el=document.getElementById("nescafe-votes"); if(el) el.textContent=t>0?"Votes: "+t:"";
-  setCommunityBadge("nescafe",t,false,THRESH);
+  if (!nescafeConfirmed) setCommunityBadge("nescafe",t,false,THRESH);
 });
 db.ref("nescafe_pending").on("value", function(snap) {
-  var el=document.getElementById("nescafe-pending"); if(el) el.textContent=snap.val()?snap.val().message:"";
+  var el=document.getElementById("nescafe-pending"); if(el) el.textContent=(!nescafeConfirmed&&snap.val())?snap.val().message:"";
 });
 
 // NANDINI
+var nandiniConfirmed = false;
 db.ref("nandini").on("value", function(snap) {
   var d=snap.val(), card=document.getElementById("nandini-card"),
       el=document.getElementById("nandini-status"), tEl=document.getElementById("nandini-time");
-  if (!d) { card.className="card"; el.className="badge b-gray"; el.textContent="Not Updated"; setCommunityBadge("nandini",0,false,THRESH); if(tEl) tEl.textContent=""; return; }
+  if (!d) { nandiniConfirmed=false; card.className="card"; el.className="badge b-gray"; el.textContent="Not Updated"; setCommunityBadge("nandini",0,false,THRESH); if(tEl) tEl.textContent=""; return; }
+  nandiniConfirmed = true;
   if (d.status==="Open") { card.className="card shop-open"; el.className="badge b-green"; el.textContent="✅ Open"; }
   else { card.className="card shop-shut"; el.className="badge b-red"; el.textContent="🔒 Closed"; }
   setCommunityBadge("nandini",THRESH,true,THRESH);
@@ -952,16 +965,18 @@ db.ref("nandini").on("value", function(snap) {
 db.ref("nandini_votes").on("value", function(snap) {
   var t=0; snap.forEach(function(c){t+=c.val();});
   var el=document.getElementById("nandini-votes"); if(el) el.textContent=t>0?"Votes: "+t:"";
-  setCommunityBadge("nandini",t,false,THRESH);
+  if (!nandiniConfirmed) setCommunityBadge("nandini",t,false,THRESH);
 });
 db.ref("nandini_pending").on("value", function(snap) {
-  var el=document.getElementById("nandini-pending"); if(el) el.textContent=snap.val()?snap.val().message:"";
+  var el=document.getElementById("nandini-pending"); if(el) el.textContent=(!nandiniConfirmed&&snap.val())?snap.val().message:"";
 });
 
 // BADMINTON
+var badmintonConfirmed = false;
 db.ref("badminton").on("value", function(snap) {
   var d=snap.val(), el=document.getElementById("badminton-status"), tEl=document.getElementById("badminton-time");
-  if (!d||!el) { setCommunityBadge("badminton",0,false,THRESH_BAD); return; }
+  if (!d||!el) { badmintonConfirmed=false; setCommunityBadge("badminton",0,false,THRESH_BAD); return; }
+  badmintonConfirmed = true;
   var st=d.status||"Not Updated";
   var bc = st==="Full"?"b-red":st.includes("1")||st.includes("2")?"b-amber":"b-green";
   el.className="badge "+bc; el.textContent=st;
@@ -971,10 +986,10 @@ db.ref("badminton").on("value", function(snap) {
 db.ref("badminton_votes").on("value", function(snap) {
   var t=0; snap.forEach(function(c){t+=c.val();});
   var el=document.getElementById("badminton-votes"); if(el) el.textContent=t>0?"Votes: "+t:"";
-  setCommunityBadge("badminton",t,false,THRESH_BAD);
+  if (!badmintonConfirmed) setCommunityBadge("badminton",t,false,THRESH_BAD);
 });
 db.ref("badminton_pending").on("value", function(snap) {
-  var el=document.getElementById("badminton-pending"); if(el) el.textContent=snap.val()?snap.val().message:"";
+  var el=document.getElementById("badminton-pending"); if(el) el.textContent=(!badmintonConfirmed&&snap.val())?snap.val().message:"";
 });
 
 // ── HELPERS ───────────────────────────────────────────────
