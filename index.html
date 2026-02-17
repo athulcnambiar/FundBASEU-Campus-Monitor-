@@ -436,16 +436,6 @@ function chkMeal(){
   .forEach(function(x){ if(h===x.h&&m===x.m){ new Notification(x.t,{body:x.b}); lnk=k; } });
 }
 
-// ═══════════════════════════════════════════════
-//  TICKER
-// ═══════════════════════════════════════════════
-db.ref("actLog").orderByChild("ts").limitToLast(20).on("value",function(snap){
-  var a=[]; snap.forEach(function(c){ a.push(c.val()); }); a.reverse();
-  if(!a.length) return;
-  var h=a.map(function(x){ return '<span class="ti"><b>'+ts(x.ts)+'</b> '+esc(x.msg)+'</span>'; }).join('');
-  ge("ttrack").innerHTML=h+h;
-});
-function logAct(msg){ db.ref("actLog").push({msg:msg,ts:Date.now()}); }
 
 // ═══════════════════════════════════════════════
 //  MESS MENU
