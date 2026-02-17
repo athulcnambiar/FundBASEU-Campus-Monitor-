@@ -23,16 +23,11 @@ header p{font-size:0.8em;color:#666;margin-bottom:8px;}
 .notif-banner.show{display:flex;}
 .notif-btn{background:#4f46e5;border:none;color:white;padding:6px 14px;border-radius:8px;font-size:0.82em;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;}
 
-.ticker-wrap{background:#12121f;border:1px solid #1e1e35;border-radius:12px;padding:7px 12px;margin:10px 0;display:flex;align-items:center;gap:10px;overflow:hidden;}
-.ticker-live{font-family:'Space Grotesk',sans-serif;font-size:0.62em;font-weight:800;color:#ef4444;letter-spacing:1.5px;white-space:nowrap;display:flex;align-items:center;gap:5px;flex-shrink:0;}
-.ldot{width:6px;height:6px;border-radius:50%;background:#ef4444;animation:blink 1s infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-.ticker-vp{flex:1;overflow:hidden;}
-.ticker-tr{display:flex;white-space:nowrap;animation:tickanim 30s linear infinite;}
-.ticker-tr:hover{animation-play-state:paused;}
-@keyframes tickanim{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-.ti{font-size:0.75em;color:#64748b;padding-right:40px;}
-.ti b{color:#94a3b8;font-weight:500;}
+.meal-banner{background:#12121f;border:1px solid #1e1e35;border-radius:12px;padding:10px 14px;margin:10px 0;display:flex;align-items:center;gap:12px;overflow:hidden;flex-wrap:wrap;}
+.meal-left{display:flex;flex-direction:column;min-width:80px;flex-shrink:0;}
+.meal-label{font-family:'Space Grotesk',sans-serif;font-size:0.6em;font-weight:800;color:#6366f1;letter-spacing:1.5px;text-transform:uppercase;}
+.meal-name{font-family:'Space Grotesk',sans-serif;font-size:1em;font-weight:700;color:#e2e8f0;margin-top:1px;}
+.meal-menu{flex:1;font-size:0.73em;color:#64748b;line-height:1.5;}
 
 .stats-bar{display:flex;justify-content:center;gap:28px;margin:12px 0;flex-wrap:wrap;}
 .s-box{text-align:center;}
@@ -60,7 +55,25 @@ header p{font-size:0.8em;color:#666;margin-bottom:8px;}
 /* ── CARD COLOR STATES (applied via JS .style directly) ── */
 /* These are templates used by JS — no class switching needed */
 
-.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;}
+.fw-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:10px;}
+.fw-card{
+  border-radius:16px;padding:16px 18px;
+  cursor:pointer;border:2px solid #242438;
+  transition:background 0.4s ease,border-color 0.4s ease,transform 0.2s,box-shadow 0.2s;
+  -webkit-tap-highlight-color:transparent;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:#1a1a2e;
+  box-shadow:0 4px 18px rgba(0,0,0,0.4);
+}
+.fw-card:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(0,0,0,0.5);}
+.fw-card:active{transform:scale(0.98);}
+.fw-left{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.fw-icon{font-size:1.6em;}
+.fw-title{font-family:'Space Grotesk',sans-serif;font-size:1.05em;font-weight:800;color:#e2e8f0;}
+.fw-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0;}
+.fw-status{font-family:'Space Grotesk',sans-serif;font-size:0.95em;font-weight:700;color:#e2e8f0;text-align:right;}
+.fw-sub{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.fw-pend{font-size:0.65em;color:#6366f1;text-align:right;}
 .ct{font-family:'Space Grotesk',sans-serif;font-size:0.92em;font-weight:700;color:#e2e8f0;}
 .ci{font-size:1.3em;}
 
@@ -189,9 +202,20 @@ header p{font-size:0.8em;color:#666;margin-bottom:8px;}
     <button class="notif-btn" id="notif-btn" onclick="reqNotif()">Enable</button>
   </div>
 
-  <div class="ticker-wrap">
-    <div class="ticker-live"><div class="ldot"></div>LIVE</div>
-    <div class="ticker-vp"><div class="ticker-tr" id="ttrack"><span class="ti"><b>No activity yet...</b></span><span class="ti"><b>No activity yet...</b></span></div></div>
+  <!-- ANNOUNCEMENTS (top) -->
+  <div class="ann-wrap" style="margin-top:10px;margin-bottom:4px;">
+    <div class="ann-title">📢 Announcements <span style="font-size:0.6em;color:#6b4fa0;font-weight:400;">12hr expiry</span></div>
+    <div id="ann-list"><div class="ann-empty">No announcements yet</div></div>
+    <button class="ann-post-btn" onclick="openAnnPost()">+ Post Announcement (admin only)</button>
+  </div>
+
+  <!-- NEXT MEAL BANNER -->
+  <div class="meal-banner" id="meal-banner">
+    <div class="meal-left">
+      <span class="meal-label" id="meal-label-top">Next Meal</span>
+      <span class="meal-name" id="meal-name-top">—</span>
+    </div>
+    <div class="meal-menu" id="meal-menu-top">Loading...</div>
   </div>
 
   <div class="stats-bar">
@@ -200,43 +224,62 @@ header p{font-size:0.8em;color:#666;margin-bottom:8px;}
   </div>
 
   <div class="sec-lbl">Campus Status</div>
+
+  <!-- FULL-WIDTH TILES: Mess, Nescafé, Nandini -->
+  <div class="fw-grid">
+
+    <div class="fw-card" id="mess-card" onclick="openModal('mess')">
+      <div class="fw-left">
+        <span class="fw-icon">🍽️</span>
+        <span class="fw-title">Mess</span>
+      </div>
+      <div class="fw-right">
+        <span class="fw-status" id="mess-avail">Not Updated</span>
+        <div class="fw-sub">
+          <span class="cb cb-none" id="mess-cb">⬜ No votes yet</span>
+          <span class="vc" id="mess-vc"></span>
+        </div>
+        <div class="fw-pend" id="mess-pend"></div>
+        <div class="tc" id="mess-ts"></div>
+      </div>
+    </div>
+
+    <div class="fw-card" id="nescafe-card" onclick="openModal('nescafe')">
+      <div class="fw-left">
+        <span class="fw-icon">☕</span>
+        <span class="fw-title">Nescafé</span>
+      </div>
+      <div class="fw-right">
+        <span class="fw-status" id="nescafe-avail">Not Updated</span>
+        <div class="fw-sub">
+          <span class="cb cb-none" id="nescafe-cb">⬜ No votes yet</span>
+          <span class="vc" id="nescafe-vc"></span>
+        </div>
+        <div class="fw-pend" id="nescafe-pend"></div>
+        <div class="tc" id="nescafe-ts"></div>
+      </div>
+    </div>
+
+    <div class="fw-card" id="nandini-card" onclick="openModal('nandini')">
+      <div class="fw-left">
+        <span class="fw-icon">🥛</span>
+        <span class="fw-title">Nandini</span>
+      </div>
+      <div class="fw-right">
+        <span class="fw-status" id="nandini-avail">Not Updated</span>
+        <div class="fw-sub">
+          <span class="cb cb-none" id="nandini-cb">⬜ No votes yet</span>
+          <span class="vc" id="nandini-vc"></span>
+        </div>
+        <div class="fw-pend" id="nandini-pend"></div>
+        <div class="tc" id="nandini-ts"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SMALL TILES GRID -->
   <div class="grid">
-
-    <div class="card" id="mess-card" onclick="openModal('mess')">
-      <div class="ch"><span class="ct">🍽️ Mess</span><span class="ci">🍛</span></div>
-      <span class="sbdg s-gray" id="mess-avail">Not Updated</span>
-      <div class="cb cb-none" id="mess-cb">⬜ No votes yet</div>
-      <span class="sbdg s-blue" id="mess-meal" style="margin-top:5px;"></span>
-      <div class="mc" id="mess-menu"></div>
-      <div class="vc" id="mess-vc"></div>
-      <div class="vc" id="mess-pend"></div>
-      <div class="tc" id="mess-ts"></div>
-    </div>
-
-    <div class="card" id="gym-card" onclick="openModal('gym')">
-      <div class="ch"><span class="ct">🏋️ Gym</span><span class="ci">💪</span></div>
-      <span class="sbdg s-gray" id="gym-status">Not Updated</span>
-      <div class="cb cb-none" id="gym-cb">⬜ No votes yet</div>
-      <div class="tc" id="gym-ts"></div>
-    </div>
-
-    <div class="card" id="nescafe-card" onclick="openModal('nescafe')">
-      <div class="ch"><span class="ct">☕ Nescafé</span><span class="ci">🥤</span></div>
-      <span class="sbdg s-gray" id="nescafe-avail">Not Updated</span>
-      <div class="cb cb-none" id="nescafe-cb">⬜ No votes yet</div>
-      <div class="vc" id="nescafe-vc"></div>
-      <div class="vc" id="nescafe-pend"></div>
-      <div class="tc" id="nescafe-ts"></div>
-    </div>
-
-    <div class="card" id="nandini-card" onclick="openModal('nandini')">
-      <div class="ch"><span class="ct">🥛 Nandini</span><span class="ci">🧃</span></div>
-      <span class="sbdg s-gray" id="nandini-avail">Not Updated</span>
-      <div class="cb cb-none" id="nandini-cb">⬜ No votes yet</div>
-      <div class="vc" id="nandini-vc"></div>
-      <div class="vc" id="nandini-pend"></div>
-      <div class="tc" id="nandini-ts"></div>
-    </div>
 
     <div class="card" id="bad-card" onclick="openModal('bad')">
       <div class="ch"><span class="ct">🏸 Badminton</span><span class="ci">🎾</span></div>
@@ -256,25 +299,18 @@ header p{font-size:0.8em;color:#666;margin-bottom:8px;}
       <div class="tc" id="doc-ts"></div>
     </div>
 
+    <div class="card" onclick="openFacultyLocator()">
+      <div class="ch"><span class="ct">👤 Faculty</span><span class="ci">🎓</span></div>
+      <span class="sbdg s-purple">Faculty Locator</span>
+      <div class="tc" id="fac-summary" style="margin-top:4px;"></div>
+    </div>
+
     <div class="card" onclick="openModal('sug')">
       <div class="ch"><span class="ct">💡 Suggest</span><span class="ci">📝</span></div>
       <span class="sbdg s-purple">Fixes & Ideas</span>
       <div class="tc" id="sug-count"></div>
     </div>
 
-  </div>
-
-  <!-- FACULTY SECTION -->
-  <div class="sec-lbl">Faculty Locator</div>
-  <div class="grid" id="faculty-grid">
-    <!-- rendered by JS -->
-  </div>
-
-  <!-- ANNOUNCEMENTS -->
-  <div class="ann-wrap">
-    <div class="ann-title">📢 Announcements <span style="font-size:0.6em;color:#6b4fa0;font-weight:400;">12hr expiry</span></div>
-    <div id="ann-list"><div class="ann-empty">No announcements yet</div></div>
-    <button class="ann-post-btn" onclick="openAnnPost()">+ Post Announcement (admin only)</button>
   </div>
 
   <!-- IMMEDIATE UPDATES -->
@@ -437,14 +473,9 @@ function chkMeal(){
 }
 
 // ═══════════════════════════════════════════════
-//  TICKER
+//  TICKER (removed) — activity log still kept for internal use
 // ═══════════════════════════════════════════════
-db.ref("actLog").orderByChild("ts").limitToLast(20).on("value",function(snap){
-  var a=[]; snap.forEach(function(c){ a.push(c.val()); }); a.reverse();
-  if(!a.length) return;
-  var h=a.map(function(x){ return '<span class="ti"><b>'+ts(x.ts)+'</b> '+esc(x.msg)+'</span>'; }).join('');
-  ge("ttrack").innerHTML=h+h;
-});
+db.ref("actLog").orderByChild("ts").limitToLast(20).on("value",function(snap){ /* kept for logAct */ });
 function logAct(msg){ db.ref("actLog").push({msg:msg,ts:Date.now()}); }
 
 // ═══════════════════════════════════════════════
@@ -459,6 +490,17 @@ function nxMeal(){ var n=new Date(),h=n.getHours(),day=DAYS[n.getDay()]; if(h>=2
 function getMnu(date,day,meal){ if(meal==="Breakfast") return (wkPat(date)==="w13"?bf13:bf24)[day]||""; var k={Lunch:"L",Snacks:"S",Dinner:"D"}[meal]; return dm[day]?dm[day][k]||"":""; }
 function updMess(){ var n=nxMeal(); setText("mess-meal","Next: "+n.meal); setText("mess-menu",getMnu(n.date,n.day,n.meal)); }
 updMess(); setInterval(updMess,60000);
+
+// ═══════════════════════════════════════════════
+//  NEXT MEAL BANNER (top of page)
+// ═══════════════════════════════════════════════
+function updMealBanner(){
+  var n=nxMeal();
+  setText("meal-label-top","Next: "+n.meal);
+  setText("meal-name-top", n.day);
+  setText("meal-menu-top", getMnu(n.date,n.day,n.meal)||"—");
+}
+updMealBanner(); setInterval(updMealBanner,60000);
 
 // ═══════════════════════════════════════════════
 //  VOTING ENGINE
@@ -545,40 +587,57 @@ function listenPlace(place, thresh, onStatus){
   });
 }
 
-// MESS
+// MESS (full-width tile)
 listenPlace("mess",T_MESS,function(d){
-  var av=ge("mess-avail"),tEl=ge("mess-ts");
-  if(!d){ paintCard("mess-card","dark"); av.className="sbdg s-gray"; av.textContent="Not Updated"; if(tEl) tEl.textContent=""; return; }
-  if(d.status==="Food Available"){ paintCard("mess-card","green"); av.className="sbdg s-green"; av.textContent="✅ Food Available"; }
-  else { paintCard("mess-card","red"); av.className="sbdg s-red"; av.textContent="❌ Food Not Available"; }
+  var av=ge("mess-avail"),tEl=ge("mess-ts"),card=ge("mess-card");
+  if(!d){
+    card.style.background="#1a1a2e"; card.style.borderColor="#242438"; card.style.boxShadow="0 4px 18px rgba(0,0,0,0.4)";
+    av.textContent="Not Updated"; av.style.color="#64748b";
+    if(tEl) tEl.textContent=""; return;
+  }
+  if(d.status==="Food Available"){
+    card.style.background="linear-gradient(135deg,#052e16,#064e3b)"; card.style.borderColor="#10b981"; card.style.boxShadow="0 4px 24px rgba(16,185,129,0.35)";
+    av.textContent="✅ Food Available"; av.style.color="#6ee7b7";
+  } else {
+    card.style.background="linear-gradient(135deg,#450a0a,#7f1d1d)"; card.style.borderColor="#ef4444"; card.style.boxShadow="0 4px 24px rgba(239,68,68,0.35)";
+    av.textContent="❌ Not Available"; av.style.color="#fca5a5";
+  }
   if(tEl) tEl.textContent=ago(d.ts);
 });
 
-// GYM
-listenPlace("gym",T_GYM,function(d){
-  var s=ge("gym-status"),tEl=ge("gym-ts");
-  if(!d){ paintCard("gym-card","dark"); s.className="sbdg s-gray"; s.textContent="Not Updated"; if(tEl) tEl.textContent=""; return; }
-  if(d.status==="Open · Free"){ paintCard("gym-card","green"); s.className="sbdg s-green"; s.textContent="✅ Open · Free"; }
-  else if(d.status==="Open · Crowded"){ paintCard("gym-card","amber"); s.className="sbdg s-amber"; s.textContent="⚠️ Crowded"; }
-  else { paintCard("gym-card","red"); s.className="sbdg s-red"; s.textContent="🔒 Closed"; }
-  if(tEl) tEl.textContent=ago(d.ts);
-});
-
-// NESCAFE
+// NESCAFE (full-width tile)
 listenPlace("nescafe",T_NESCAFE,function(d){
-  var s=ge("nescafe-avail"),tEl=ge("nescafe-ts");
-  if(!d){ paintCard("nescafe-card","dark"); s.className="sbdg s-gray"; s.textContent="Not Updated"; if(tEl) tEl.textContent=""; return; }
-  if(d.status==="Open"){ paintCard("nescafe-card","green"); s.className="sbdg s-green"; s.textContent="✅ Open"; }
-  else { paintCard("nescafe-card","red"); s.className="sbdg s-red"; s.textContent="🔒 Closed"; }
+  var s=ge("nescafe-avail"),tEl=ge("nescafe-ts"),card=ge("nescafe-card");
+  if(!d){
+    card.style.background="#1a1a2e"; card.style.borderColor="#242438"; card.style.boxShadow="0 4px 18px rgba(0,0,0,0.4)";
+    s.textContent="Not Updated"; s.style.color="#64748b";
+    if(tEl) tEl.textContent=""; return;
+  }
+  if(d.status==="Open"){
+    card.style.background="linear-gradient(135deg,#052e16,#064e3b)"; card.style.borderColor="#10b981"; card.style.boxShadow="0 4px 24px rgba(16,185,129,0.35)";
+    s.textContent="✅ Open"; s.style.color="#6ee7b7";
+  } else {
+    card.style.background="linear-gradient(135deg,#450a0a,#7f1d1d)"; card.style.borderColor="#ef4444"; card.style.boxShadow="0 4px 24px rgba(239,68,68,0.35)";
+    s.textContent="🔒 Closed"; s.style.color="#fca5a5";
+  }
   if(tEl) tEl.textContent=ago(d.ts);
 });
 
-// NANDINI
+// NANDINI (full-width tile)
 listenPlace("nandini",T_NANDINI,function(d){
-  var s=ge("nandini-avail"),tEl=ge("nandini-ts");
-  if(!d){ paintCard("nandini-card","dark"); s.className="sbdg s-gray"; s.textContent="Not Updated"; if(tEl) tEl.textContent=""; return; }
-  if(d.status==="Open"){ paintCard("nandini-card","green"); s.className="sbdg s-green"; s.textContent="✅ Open"; }
-  else { paintCard("nandini-card","red"); s.className="sbdg s-red"; s.textContent="🔒 Closed"; }
+  var s=ge("nandini-avail"),tEl=ge("nandini-ts"),card=ge("nandini-card");
+  if(!d){
+    card.style.background="#1a1a2e"; card.style.borderColor="#242438"; card.style.boxShadow="0 4px 18px rgba(0,0,0,0.4)";
+    s.textContent="Not Updated"; s.style.color="#64748b";
+    if(tEl) tEl.textContent=""; return;
+  }
+  if(d.status==="Open"){
+    card.style.background="linear-gradient(135deg,#052e16,#064e3b)"; card.style.borderColor="#10b981"; card.style.boxShadow="0 4px 24px rgba(16,185,129,0.35)";
+    s.textContent="✅ Open"; s.style.color="#6ee7b7";
+  } else {
+    card.style.background="linear-gradient(135deg,#450a0a,#7f1d1d)"; card.style.borderColor="#ef4444"; card.style.boxShadow="0 4px 24px rgba(239,68,68,0.35)";
+    s.textContent="🔒 Closed"; s.style.color="#fca5a5";
+  }
   if(tEl) tEl.textContent=ago(d.ts);
 });
 
@@ -607,64 +666,101 @@ listenPlace("doc",T_DOC,function(d){
 db.ref("suggestions").on("value",function(snap){ setText("sug-count",(snap.numChildren()||0)+" suggestion(s)"); });
 
 // ═══════════════════════════════════════════════
-//  FACULTY GRID
+//  FACULTY LOCATOR (single tile → modal with all faculty)
 // ═══════════════════════════════════════════════
-var facConf = {};  // tracks which faculty cards are confirmed
+var facConf = {};
+var facStatuses = {}; // cache latest status per key
 
-function buildFacultyGrid(){
-  var grid = ge("faculty-grid");
-  grid.innerHTML = FACULTY.map(function(name,i){
-    var key = "fac_"+i;
-    var short = name.replace(/^(Dr\.|Prof\.)\s/,"");
-    return '<div class="card" id="'+key+'-card" onclick="openFacModal('+i+')" style="min-width:0;">'+
-      '<div class="ch"><span class="ct" style="font-size:0.82em;">👤 '+esc(short)+'</span></div>'+
-      '<span class="sbdg s-gray" id="'+key+'-status">Not Updated</span>'+
-      '<div class="cb cb-none" id="'+key+'-cb" style="font-size:0.62em;">⬜ No votes</div>'+
-      '<div class="vc" id="'+key+'-vc"></div>'+
-      '<div class="tc" id="'+key+'-ts"></div>'+
-    '</div>';
-  }).join('');
+function isOfficeHours(){
+  var h=new Date().getHours();
+  return h>=9 && h<18; // 9am–6pm = office hours; outside = auto Out of Office
+}
 
-  // Listen to each faculty
+function getFacDisplay(key){
+  // If outside office hours, auto show Out of Office regardless of DB status
+  if(!isOfficeHours()) return {badge:"🌙 Out of Office", color:"s-gray", auto:true};
+  var d=facStatuses[key];
+  if(!d) return {badge:"Not Updated", color:"s-gray", auto:false};
+  if(d.status==="In Class") return {badge:"🏫 In Class", color:"s-green", auto:false};
+  if(d.status==="In Cabin") return {badge:"🚪 In Cabin", color:"s-teal", auto:false};
+  if(d.status==="Admin")    return {badge:"🏢 Admin", color:"s-amber", auto:false};
+  if(d.status==="On Leave") return {badge:"🏖️ On Leave", color:"s-red", auto:false};
+  return {badge:d.status, color:"s-blue", auto:false};
+}
+
+function initFacultyListeners(){
   FACULTY.forEach(function(name,i){
     var key = "fac_"+i;
     listenFaculty(key, T_PROF);
   });
+  // Re-check display every minute in case time crosses 6pm or 9am boundary
+  setInterval(updateFacSummary, 60000);
+}
+
+function updateFacSummary(){
+  if(!isOfficeHours()){
+    setText("fac-summary","🌙 Out of Office");
+    return;
+  }
+  var updated=0, total=FACULTY.length;
+  FACULTY.forEach(function(_,i){ if(facStatuses["fac_"+i]) updated++; });
+  setText("fac-summary", updated+"/"+total+" updated");
+}
+
+function openFacultyLocator(){
+  var officeHours=isOfficeHours();
+  var rows = FACULTY.map(function(name,i){
+    var key="fac_"+i;
+    var disp=getFacDisplay(key);
+    var short=name.replace(/^(Dr\.|Prof\.)\s/,"");
+    var d=facStatuses[key];
+    var ts_txt=(!disp.auto&&d)?ago(d.ts):"";
+    var clickable=officeHours?"onclick=\"openFacModal("+i+")\"":"";
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #1e1e35;'+(officeHours?'cursor:pointer;':'')+'" '+clickable+'>'+
+      '<span style="font-size:0.88em;color:#e2e8f0;font-weight:600;">👤 '+esc(short)+'</span>'+
+      '<span style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">'+
+        '<span class="sbdg '+disp.color+'" style="padding:3px 8px;font-size:0.72em;">'+disp.badge+'</span>'+
+        (ts_txt?'<span style="font-size:0.6em;color:#444;">'+ts_txt+'</span>':'')+
+      '</span></div>';
+  }).join('');
+
+  var officeNote=officeHours?'<p style="color:#888;font-size:0.78em;margin-bottom:10px;">Tap any faculty to update their location</p>':
+    '<p style="color:#f59e0b;font-size:0.78em;margin-bottom:10px;">🌙 Outside office hours (9am–6pm) — all faculty shown as Out of Office</p>';
+
+  var h='<div class="mh"><span>🎓 Faculty Locator</span><button class="mx" onclick="closeModal()">✕</button></div>';
+  h+=officeNote;
+  h+='<div style="max-height:65vh;overflow-y:auto;">'+rows+'</div>';
+  h+='<button class="mb x" style="margin-top:14px;" onclick="closeModal()">Close</button>';
+  ge("mbox").innerHTML=h;
+  ge("modal").classList.add("active");
 }
 
 function listenFaculty(key, thresh){
   db.ref(key).on("value",function(snap){
     var d=snap.val();
-    var s=ge(key+"-status"), tEl=ge(key+"-ts");
     if(!d||!d.status){
       facConf[key]=false;
-      paintCard(key+"-card","dark");
-      if(s){ s.className="sbdg s-gray"; s.textContent="Not Updated"; }
+      facStatuses[key]=null;
       // Clear stale device vote lock so user can vote in a new round
       db.ref(key+"_dv/"+devId).once("value",function(dvSnap){
         if(dvSnap.exists()) db.ref(key+"_dv/"+devId).remove();
       });
       setCB(key,0,false,thresh);
-      return;
+    } else {
+      facConf[key]=true;
+      facStatuses[key]=d;
+      setCB(key,0,true,thresh);
     }
-    facConf[key]=true;
-    setCB(key,0,true,thresh);
-    var st=d.status;
-    if(st==="In Class"){ paintCard(key+"-card","green"); if(s){ s.className="sbdg s-green"; s.textContent="🏫 In Class"; } }
-    else if(st==="In Cabin"){ paintCard(key+"-card","teal"); if(s){ s.className="sbdg s-teal"; s.textContent="🚪 In Cabin"; } }
-    else if(st==="Admin"){ paintCard(key+"-card","amber"); if(s){ s.className="sbdg s-amber"; s.textContent="🏢 Admin"; } }
-    else if(st==="On Leave"){ paintCard(key+"-card","red"); if(s){ s.className="sbdg s-red"; s.textContent="🏖️ On Leave"; } }
-    else { paintCard(key+"-card","blue"); if(s){ s.className="sbdg s-blue"; s.textContent=st; } }
-    if(tEl) tEl.textContent=ago(d.ts);
+    updateFacSummary();
   });
   db.ref(key+"_voteCount").on("value",function(snap){
     var c=snap.val()||0;
-    var e=ge(key+"-vc"); if(e) e.textContent=c>0?"Votes: "+c:"";
     if(!facConf[key]) setCB(key,c,false,thresh);
   });
 }
 
-buildFacultyGrid();
+initFacultyListeners();
+updateFacSummary();
 
 // ═══════════════════════════════════════════════
 //  MODAL
@@ -764,6 +860,7 @@ function openModal(place){
 }
 
 function openFacModal(idx){
+  if(!isOfficeHours()){ toast("🌙 Faculty locator is active 9am–6pm only"); return; }
   var key="fac_"+idx, name=FACULTY[idx];
   var h='<div class="mh"><span>👤 '+esc(name)+'</span><button class="mx" onclick="closeModal()">✕</button></div>';
   h+='<p style="color:#888;font-size:0.8em;margin-bottom:10px;">Where is '+esc(name.split(' ')[1]||name)+' right now? (needs '+T_PROF+')</p>';
