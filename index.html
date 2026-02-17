@@ -436,7 +436,16 @@ function chkMeal(){
   .forEach(function(x){ if(h===x.h&&m===x.m){ new Notification(x.t,{body:x.b}); lnk=k; } });
 }
 
-
+// ═══════════════════════════════════════════════
+//  TICKER
+// ═══════════════════════════════════════════════
+db.ref("actLog").orderByChild("ts").limitToLast(20).on("value",function(snap){
+  var a=[]; snap.forEach(function(c){ a.push(c.val()); }); a.reverse();
+  if(!a.length) return;
+  var h=a.map(function(x){ return '<span class="ti"><b>'+ts(x.ts)+'</b> '+esc(x.msg)+'</span>'; }).join('');
+  ge("ttrack").innerHTML=h+h;
+});
+function logAct(msg){ db.ref("actLog").push({msg:msg,ts:Date.now()}); }
 
 // ═══════════════════════════════════════════════
 //  MESS MENU
@@ -475,6 +484,7 @@ function doVote(place, value, thresh){
         if(err||!ok||!sn){ dvRef.remove(); return toast("Error voting, try again"); }
         var count=sn.val(), rem=thresh-count;
         if(count>=thresh){
+          confirmed[place]=true; // set immediately to prevent badge flicker during cleanup
           db.ref(place).set({status:value,ts:Date.now()},function(){
             db.ref(place+"_voteCount").remove();
             db.ref(place+"_votedFor").remove();
@@ -511,7 +521,16 @@ function adminSet(place, value){
 function listenPlace(place, thresh, onStatus){
   db.ref(place).on("value",function(snap){
     var d=snap.val();
-    if(!d||!d.status){ confirmed[place]=false; setCB(place,0,false,thresh); onStatus(null); return; }
+    if(!d||!d.status){
+      confirmed[place]=false;
+      // Clear stale device vote lock so user can vote in a new round
+      db.ref(place+"_dv/"+devId).once("value",function(dvSnap){
+        if(dvSnap.exists()) db.ref(place+"_dv/"+devId).remove();
+      });
+      setCB(place,0,false,thresh);
+      onStatus(null);
+      return;
+    }
     confirmed[place]=true;
     setCB(place,0,true,thresh);
     onStatus(d);
@@ -621,6 +640,10 @@ function listenFaculty(key, thresh){
       facConf[key]=false;
       paintCard(key+"-card","dark");
       if(s){ s.className="sbdg s-gray"; s.textContent="Not Updated"; }
+      // Clear stale device vote lock so user can vote in a new round
+      db.ref(key+"_dv/"+devId).once("value",function(dvSnap){
+        if(dvSnap.exists()) db.ref(key+"_dv/"+devId).remove();
+      });
       setCB(key,0,false,thresh);
       return;
     }
