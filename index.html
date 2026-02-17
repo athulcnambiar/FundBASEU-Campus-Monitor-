@@ -30,7 +30,7 @@ body {
 header {
   text-align: center;
   color: white;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 header h1 {
@@ -45,6 +45,25 @@ header p {
   font-size: 1em;
   opacity: 0.95;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+  margin-bottom: 10px;
+}
+
+.updates-link {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: white;
+  text-decoration: none;
+  font-size: 0.9em;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.updates-link:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .stats-bar {
@@ -91,6 +110,48 @@ header p {
   cursor: pointer;
   border: 2px solid rgba(255, 255, 255, 0.3);
   -webkit-tap-highlight-color: transparent;
+}
+
+.card.food-available {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.card.food-available .card-title,
+.card.food-available .menu-info,
+.card.food-available .votes-info,
+.card.food-available .last-updated {
+  color: white;
+}
+
+.card.food-available .status {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.card.food-available .menu-info {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.card.food-finished {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.card.food-finished .card-title,
+.card.food-finished .menu-info,
+.card.food-finished .votes-info,
+.card.food-finished .last-updated {
+  color: white;
+}
+
+.card.food-finished .status {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.card.food-finished .menu-info {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .card:active {
@@ -145,6 +206,16 @@ header p {
 
 .status.neutral {
   background: #3b82f6;
+  color: white;
+}
+
+.status.free {
+  background: #10b981;
+  color: white;
+}
+
+.status.crowded {
+  background: #f59e0b;
   color: white;
 }
 
@@ -267,12 +338,19 @@ header p {
   font-size: 0.95em;
 }
 
-.input-group input {
+.input-group input,
+.input-group textarea {
   width: 100%;
   padding: 12px;
   border: 2px solid #ddd;
   border-radius: 8px;
   font-size: 1em;
+  font-family: inherit;
+}
+
+.input-group textarea {
+  min-height: 100px;
+  resize: vertical;
 }
 
 .confirmation-notice {
@@ -300,6 +378,38 @@ header p {
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   z-index: 999;
+}
+
+.suggestions-list {
+  max-height: 400px;
+  overflow-y: auto;
+  margin: 15px 0;
+}
+
+.suggestion-item {
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border-left: 4px solid #3b82f6;
+}
+
+.suggestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.suggestion-text {
+  color: #333;
+  font-size: 0.95em;
+  line-height: 1.4;
+}
+
+.suggestion-time {
+  font-size: 0.75em;
+  color: #666;
 }
 
 @media (max-width: 768px) {
@@ -353,6 +463,7 @@ header p {
   <header>
     <h1>🎓 FundBASEU Tracker</h1>
     <p>Real-time campus status updates by students, for students</p>
+    <a href="https://sway.cloud.microsoft/CuEoSACHmG0wvSfR?ref=Link&loc=play" target="_blank" class="updates-link">📢 FundBASEU Updates</a>
   </header>
 
   <div class="stats-bar">
@@ -368,11 +479,12 @@ header p {
 
   <div class="grid">
     <!-- Mess Card -->
-    <div class="card" onclick="openModal('mess')">
+    <div class="card" id="mess-card" onclick="openModal('mess')">
       <div class="card-header">
         <span class="card-title">🍽️ Mess</span>
         <span class="card-icon">🍛</span>
       </div>
+      <div id="mess-availability" class="status neutral"></div>
       <div id="mess-meal" class="status neutral"></div>
       <div id="mess-menu" class="menu-info"></div>
       <div id="mess-votes" class="votes-info"></div>
@@ -424,6 +536,16 @@ header p {
       <div id="badminton-votes" class="votes-info"></div>
       <div id="badminton-pending" class="votes-info"></div>
       <div id="badminton-time" class="last-updated"></div>
+    </div>
+
+    <!-- Suggestions Card -->
+    <div class="card" onclick="openModal('suggestions')">
+      <div class="card-header">
+        <span class="card-title">💡 Suggestions</span>
+        <span class="card-icon">📝</span>
+      </div>
+      <div class="status neutral">Click to submit or view</div>
+      <div class="last-updated" id="suggestions-count"></div>
     </div>
   </div>
 </div>
@@ -502,39 +624,39 @@ const breakfastMenu = {
 // Lunch, Snacks, Dinner from the photo
 const dailyMenu = {
   Monday: {
-    Lunch: "Poori or Ragi Ball + Rice + Drumstick + channa + Curd",
+    Lunch: "Poori or Ragi Ball + Rice + Drumstick + Channa + Curd",
     Snacks: "Cutlet + Tea",
     Dinner: "Dal Makhni + Rice + Dal + Veg"
   },
   Tuesday: {
-    Lunch: "MethiChapathi + Rice + Dal + VegPulav + Curd + Pickle",
+    Lunch: "Methi Chapathi + Rice + Dal + Veg Pulav + Curd + Pickle",
     Snacks: "Kabuli Husli + Tea",
-    Dinner: "Soyabean + Rice + Radish SambharDal + Chapati"
+    Dinner: "Soyabean + Rice + Radish Sambhar Dal + Chapati"
   },
   Wednesday: {
-    Lunch: "Chapathi or Ragi Balls  + Rice + Dal + Paneer + Sproutssambhar + Pickle + Papad",
+    Lunch: "Chapathi or Ragi Balls + Rice + Dal + Paneer + Sprouts Sambhar + Pickle + Papad",
     Snacks: "Samosa + Tea",
     Dinner: "Chapathi + Rice + Aloo + Rasam"
   },
   Thursday: {
-    Lunch: "Paratha + rajma + jeera rice + pudina rice + Curd + Pickle",
-    Snacks: "Vada pav + Tea",
-    Dinner: "Chapathi + Rice + Egg curry + Dal palak + Salad"
+    Lunch: "Paratha + Rajma + Jeera Rice + Pudina Rice + Curd + Pickle",
+    Snacks: "Vada Pav + Tea",
+    Dinner: "Chapathi + Rice + Egg Curry + Dal Palak + Salad"
   },
   Friday: {
-    Lunch: "palak chapati + Bhindi Chole + Dal + Chicken Biriyani + Veg + Curd + Pickle + Papad",
-    Snacks: "Bhel puri + Tea",
+    Lunch: "Palak Chapati + Bhindi Chole + Dal + Chicken Biryani + Veg + Curd + Pickle + Papad",
+    Snacks: "Bhel Puri + Tea",
     Dinner: "Chapathi + Rice + Dal + Veg"
   },
   Saturday: {
-    Lunch: "Chapathi + Rice + Dal + mixVeg beans + Curd + Pickle",
-    Snacks: "Masala vada + Tea",
+    Lunch: "Chapathi + Rice + Dal + Mix Veg Beans + Curd + Pickle",
+    Snacks: "Masala Vada + Tea",
     Dinner: "Chapathi + Rice + Dal + Veg + Salad"
   },
   Sunday: {
-    Lunch: "Mushroom Biryani or Paneer Biriyani + Salad",
-    Snacks: "Pav bhaji + Tea",
-    Dinner: "Chapathi + Rice + Beetroot palya + Veg"
+    Lunch: "Mushroom Biryani or Paneer Biryani + Salad",
+    Snacks: "Pav Bhaji + Tea",
+    Dinner: "Chapathi + Rice + Beetroot Palya + Veg"
   }
 };
 
@@ -599,6 +721,16 @@ function updateMessDisplay() {
 updateMessDisplay();
 setInterval(updateMessDisplay, 60000);
 
+// ---------- SUGGESTIONS ----------
+function loadSuggestions() {
+  db.ref("suggestions").orderByChild("timestamp").limitToLast(20).on("value", snap => {
+    const count = snap.numChildren();
+    document.getElementById("suggestions-count").innerHTML = count + " suggestion(s) submitted";
+  });
+}
+
+loadSuggestions();
+
 // ---------- MODAL ----------
 function openModal(place) {
   let html = '<div class="modal-header">';
@@ -613,8 +745,8 @@ function openModal(place) {
   else if (place === 'gym') {
     html += '🏋️ Gym Crowd</div>';
     html += '<div class="button-group">';
-    html += '<button class="btn btn-available" onclick="updateGym(\'Below 3\')">Below 3 people</button>';
-    html += '<button class="btn btn-finished" onclick="updateGym(\'Above 3\')">Above 3 people</button>';
+    html += '<button class="btn btn-available" onclick="updateGym(\'Below 3\')">Below 3 people (Free)</button>';
+    html += '<button class="btn btn-finished" onclick="updateGym(\'Above 3\')">Above 3 people (A little crowded)</button>';
     html += '</div>';
   }
   else if (place === 'badminton') {
@@ -639,6 +771,36 @@ function openModal(place) {
     html += '<button class="btn btn-closed" onclick="vote(\'nandini\', \'Closed\')">Closed</button>';
     html += '</div>';
   }
+  else if (place === 'suggestions') {
+    html += '💡 Suggestions & Fixes</div>';
+    html += '<div class="input-group">';
+    html += '<label>Share your suggestion or report an issue:</label>';
+    html += '<textarea id="suggestion-text" placeholder="Enter your suggestion or bug report here..."></textarea>';
+    html += '</div>';
+    html += '<button class="btn btn-available" onclick="submitSuggestion()">Submit</button>';
+    html += '<hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">';
+    html += '<h3 style="margin-bottom: 15px; color: #333;">Recent Suggestions:</h3>';
+    html += '<div class="suggestions-list" id="suggestions-display">Loading...</div>';
+    
+    // Load suggestions
+    setTimeout(function() {
+      db.ref("suggestions").orderByChild("timestamp").limitToLast(20).once("value", snap => {
+        let suggestionsList = '';
+        const suggestions = [];
+        snap.forEach(child => {
+          suggestions.push(child.val());
+        });
+        suggestions.reverse().forEach(sug => {
+          const timeAgo = getTimeAgo(sug.timestamp);
+          suggestionsList += '<div class="suggestion-item">';
+          suggestionsList += '<div class="suggestion-header"><span class="suggestion-time">' + timeAgo + '</span></div>';
+          suggestionsList += '<div class="suggestion-text">' + sug.text + '</div>';
+          suggestionsList += '</div>';
+        });
+        document.getElementById('suggestions-display').innerHTML = suggestionsList || '<p style="text-align:center;color:#666;">No suggestions yet</p>';
+      });
+    }, 100);
+  }
   
   html += '<button class="btn btn-close" onclick="closeModal()">Close</button>';
   
@@ -648,6 +810,32 @@ function openModal(place) {
 
 function closeModal() {
   document.getElementById("modal").classList.remove("active");
+}
+
+function submitSuggestion() {
+  const text = document.getElementById("suggestion-text").value.trim();
+  if (!text) return alert("Please enter a suggestion");
+  
+  db.ref("suggestions").push({
+    text: text,
+    timestamp: Date.now()
+  });
+  
+  alert("Thank you! Your suggestion has been submitted.");
+  closeModal();
+}
+
+function getTimeAgo(timestamp) {
+  const minutes = Math.floor((Date.now() - timestamp) / 60000);
+  if (minutes < 1) return "Just now";
+  if (minutes === 1) return "1 minute ago";
+  if (minutes < 60) return minutes + " minutes ago";
+  const hours = Math.floor(minutes / 60);
+  if (hours === 1) return "1 hour ago";
+  if (hours < 24) return hours + " hours ago";
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "1 day ago";
+  return days + " days ago";
 }
 
 // ---------- VOTING ----------
@@ -737,7 +925,11 @@ function timeAgo(ts) {
     var timeEl = document.getElementById(place + '-time');
     
     if (!d) {
-      if (statusEl && place !== 'mess') {
+      if (place === 'mess') {
+        document.getElementById('mess-card').className = 'card';
+        document.getElementById('mess-availability').innerHTML = 'Click to update';
+        document.getElementById('mess-availability').className = 'status not-updated';
+      } else if (statusEl) {
         statusEl.className = "status not-updated";
         statusEl.innerHTML = "Click to update";
       }
@@ -754,12 +946,29 @@ function timeAgo(ts) {
     }
     else if (place === 'gym') {
       if (statusEl) {
-        statusEl.innerHTML = d.status;
-        statusEl.className = 'status neutral';
+        if (d.status === 'Below 3') {
+          statusEl.innerHTML = 'Free';
+          statusEl.className = 'status free';
+        } else {
+          statusEl.innerHTML = 'A little crowded';
+          statusEl.className = 'status crowded';
+        }
       }
       if (timeEl) timeEl.innerHTML = timeAgo(d.timestamp);
     }
     else if (place === 'mess') {
+      const messCard = document.getElementById('mess-card');
+      const availEl = document.getElementById('mess-availability');
+      
+      if (d.status === 'Food Available') {
+        messCard.className = 'card food-available';
+        availEl.innerHTML = '✓ Food Available';
+        availEl.className = 'status';
+      } else {
+        messCard.className = 'card food-finished';
+        availEl.innerHTML = '✗ Food Not Available';
+        availEl.className = 'status';
+      }
       if (timeEl) timeEl.innerHTML = timeAgo(d.timestamp);
     }
     else {
