@@ -1,43 +1,931 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>BASEU Campus Monitor</title>
-  <style>
-    body {
-      margin: 0;
-      background: #0f172a;
-      color: white;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      text-align: center;
-    }
-    .box {
-      padding: 40px;
-      background: #1e293b;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.4);
-      max-width: 500px;
-    }
-    h1 {
-      font-size: 2.2em;
-      color: #f97316;
-      margin-bottom: 10px;
-    }
-    p {
-      color: #cbd5e1;
-      font-size: 1.1em;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FundBASEU Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#0f0f1a;min-height:100vh;padding:15px 15px 90px;color:#fff;}
+
+header{text-align:center;margin-bottom:12px;padding-top:8px;}
+header h1{font-family:'Space Grotesk',sans-serif;font-size:1.9em;font-weight:800;background:linear-gradient(135deg,#a78bfa,#60a5fa,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-1px;margin-bottom:4px;}
+header p{font-size:0.8em;color:#666;margin-bottom:8px;}
+.upd-link{display:inline-block;background:rgba(167,139,250,0.15);padding:6px 14px;border-radius:20px;color:#a78bfa;text-decoration:none;font-size:0.8em;font-weight:600;border:1px solid rgba(167,139,250,0.3);}
+
+/* ADMIN BADGE */
+#admin-bar{display:none;position:fixed;top:10px;right:10px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);color:#f87171;padding:4px 10px;border-radius:20px;font-size:0.7em;font-weight:700;z-index:600;cursor:pointer;}
+#admin-bar.show{display:block;}
+
+/* NOTIF BANNER */
+.notif-banner{display:none;background:linear-gradient(135deg,#1e1b4b,#1e3a5f);border:1px solid #4f46e5;border-radius:12px;padding:10px 14px;margin:10px 0;font-size:0.8em;color:#a5b4fc;align-items:center;gap:10px;flex-wrap:wrap;}
+.notif-banner.show{display:flex;}
+.notif-btn{background:#4f46e5;border:none;color:white;padding:6px 14px;border-radius:8px;font-size:0.82em;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;}
+
+/* TICKER */
+.ticker-wrap{background:#12121f;border:1px solid #1e1e35;border-radius:12px;padding:7px 12px;margin:10px 0;display:flex;align-items:center;gap:10px;overflow:hidden;}
+.ticker-live{font-family:'Space Grotesk',sans-serif;font-size:0.62em;font-weight:800;color:#ef4444;letter-spacing:1.5px;white-space:nowrap;display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.ldot{width:6px;height:6px;border-radius:50%;background:#ef4444;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.ticker-vp{flex:1;overflow:hidden;}
+.ticker-tr{display:flex;white-space:nowrap;animation:tick 28s linear infinite;}
+.ticker-tr:hover{animation-play-state:paused;}
+@keyframes tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ti{font-size:0.75em;color:#64748b;padding-right:40px;}
+.ti b{color:#94a3b8;font-weight:500;}
+
+/* STATS */
+.stats-bar{display:flex;justify-content:center;gap:28px;margin:12px 0;flex-wrap:wrap;}
+.s-box{text-align:center;}
+.s-num{font-family:'Space Grotesk',sans-serif;font-size:1.7em;font-weight:800;display:block;color:#fff;}
+.s-lbl{font-size:0.72em;color:#555;}
+
+.sec-lbl{font-family:'Space Grotesk',sans-serif;font-size:0.65em;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#444;margin:14px 0 8px 2px;}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:6px;}
+
+/* CARDS */
+.card{background:#1a1a2e;border-radius:16px;padding:14px;box-shadow:0 4px 18px rgba(0,0,0,0.4);cursor:pointer;border:1px solid #242438;transition:transform 0.2s,box-shadow 0.2s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden;}
+.card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.025),transparent);pointer-events:none;}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.5);}
+.card:active{transform:scale(0.97);}
+.food-yes{background:linear-gradient(135deg,#064e3b,#065f46)!important;border-color:#10b981!important;}
+.food-no{background:linear-gradient(135deg,#7f1d1d,#991b1b)!important;border-color:#ef4444!important;}
+.gym-free{background:linear-gradient(135deg,#064e3b,#065f46)!important;border-color:#10b981!important;}
+.gym-busy{background:linear-gradient(135deg,#78350f,#92400e)!important;border-color:#f59e0b!important;}
+.gym-shut{background:linear-gradient(135deg,#7f1d1d,#991b1b)!important;border-color:#ef4444!important;}
+.shop-open{background:linear-gradient(135deg,#064e3b,#065f46)!important;border-color:#10b981!important;}
+.shop-shut{background:linear-gradient(135deg,#7f1d1d,#991b1b)!important;border-color:#ef4444!important;}
+
+.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;}
+.ct{font-family:'Space Grotesk',sans-serif;font-size:0.93em;font-weight:700;color:#e2e8f0;}
+.ci{font-size:1.3em;}
+
+/* BADGES */
+.bdg{display:block;padding:5px 10px;border-radius:20px;font-size:0.76em;font-weight:700;margin:3px 0;text-align:center;width:100%;}
+.bg{background:rgba(16,185,129,0.18);color:#34d399;border:1px solid rgba(16,185,129,0.28);}
+.br{background:rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.28);}
+.ba{background:rgba(245,158,11,0.18);color:#fbbf24;border:1px solid rgba(245,158,11,0.28);}
+.bb{background:rgba(96,165,250,0.18);color:#93c5fd;border:1px solid rgba(96,165,250,0.28);}
+.bgr{background:rgba(100,116,139,0.15);color:#64748b;border:1px solid rgba(100,116,139,0.2);}
+.bp{background:rgba(167,139,250,0.15);color:#c4b5fd;border:1px solid rgba(167,139,250,0.25);}
+.bt{background:rgba(20,184,166,0.18);color:#5eead4;border:1px solid rgba(20,184,166,0.28);}
+
+/* COMMUNITY BADGE */
+.cb{display:flex;align-items:center;gap:4px;font-size:0.68em;font-weight:700;margin-top:4px;padding:3px 8px;border-radius:7px;width:fit-content;}
+.cb-ok{background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.22);}
+.cb-wait{background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.22);}
+.cb-none{background:rgba(100,116,139,0.1);color:#475569;border:1px solid rgba(100,116,139,0.18);}
+
+.mc{font-size:0.7em;color:#94a3b8;margin-top:5px;background:rgba(255,255,255,0.04);padding:5px 8px;border-radius:8px;line-height:1.45;}
+.tc{font-size:0.65em;color:#444;margin-top:5px;text-align:center;}
+.vc{font-size:0.65em;color:#6366f1;margin-top:2px;text-align:center;}
+
+/* ANNOUNCEMENTS */
+.ann-wrap{margin-top:14px;border:1px solid rgba(167,139,250,0.22);border-radius:18px;padding:14px;background:#0f0a1a;}
+.ann-title{font-family:'Space Grotesk',sans-serif;font-size:0.95em;font-weight:800;color:#a78bfa;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.ann-card{background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.18);border-radius:10px;padding:10px 12px;margin-bottom:8px;animation:fu 0.3s ease;}
+.ann-txt{font-size:0.85em;color:#e2e8f0;line-height:1.45;}
+.ann-meta{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap;}
+.ann-tag{font-size:0.65em;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:0.5px;}
+.tag-mess{background:rgba(245,158,11,0.2);color:#fbbf24;}
+.tag-event{background:rgba(96,165,250,0.2);color:#93c5fd;}
+.tag-academic{background:rgba(16,185,129,0.2);color:#34d399;}
+.tag-general{background:rgba(167,139,250,0.2);color:#c4b5fd;}
+.ann-ts{font-size:0.65em;color:#555;}
+.ann-exp{font-size:0.63em;color:#333;}
+.ann-del{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.2);color:#f87171;padding:2px 8px;border-radius:6px;font-size:0.65em;cursor:pointer;font-weight:700;}
+.ann-empty{text-align:center;color:#444;font-size:0.8em;padding:14px;}
+.ann-post-btn{display:block;margin:12px auto 0;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.22);color:#a78bfa;padding:5px 14px;border-radius:8px;font-size:0.72em;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;}
+
+/* IMMEDIATE UPDATES */
+.imm-wrap{margin-top:14px;border:1px solid rgba(245,158,11,0.22);border-radius:18px;padding:14px;background:#130f00;}
+.imm-title{font-family:'Space Grotesk',sans-serif;font-size:0.95em;font-weight:800;color:#fbbf24;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.imm-card{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:9px 11px;margin-bottom:8px;font-size:0.82em;color:#fde68a;line-height:1.45;animation:fu 0.3s ease;}
+.imm-meta{font-size:0.65em;color:#78350f;margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.dv-btn{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.2);color:#f87171;padding:2px 8px;border-radius:6px;font-size:0.7em;cursor:pointer;font-weight:700;}
+.dv-done{opacity:0.4;cursor:default;}
+
+/* HEARTBEAT */
+.hb-wrap{margin-top:14px;border:1px solid rgba(255,77,109,0.22);border-radius:18px;padding:14px;background:#150009;position:relative;overflow:hidden;}
+.hb-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#ff4d6d,#ff758c,#ff4d6d);background-size:200%;animation:shimmer 2s infinite;}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+.hb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.hb-tit{font-family:'Space Grotesk',sans-serif;font-size:0.95em;font-weight:800;color:#ff4d6d;display:flex;align-items:center;gap:6px;}
+.pdot{width:8px;height:8px;border-radius:50%;background:#ff4d6d;animation:pulse 1.2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+.hb-rules{background:rgba(255,77,109,0.07);border:1px solid rgba(255,77,109,0.18);border-radius:10px;padding:9px 11px;margin:8px 0;font-size:0.72em;color:#fca5a5;line-height:1.7;}
+.hb-rules strong{color:#ff4d6d;display:block;margin-bottom:3px;font-family:'Space Grotesk',sans-serif;}
+.hb-row{display:flex;gap:8px;margin:8px 0 2px;}
+.hb-in{flex:1;background:rgba(255,255,255,0.06);border:1px solid #2a1520;border-radius:10px;padding:9px 11px;color:white;font-size:0.82em;font-family:'DM Sans',sans-serif;outline:none;}
+.hb-in:focus{border-color:#ff4d6d;}
+.hb-in::placeholder{color:#4a2530;}
+.chct{font-size:0.65em;color:#4a2530;text-align:right;margin-bottom:6px;}
+.chct.warn{color:#f59e0b;}
+.btn-hb{background:#ff4d6d;color:white;border:none;border-radius:10px;padding:9px 13px;font-weight:700;font-size:0.82em;cursor:pointer;font-family:'Space Grotesk',sans-serif;white-space:nowrap;}
+.hb-feed{display:flex;flex-direction:column;gap:7px;margin-top:8px;max-height:280px;overflow-y:auto;}
+.hb-card{background:rgba(255,77,109,0.07);border:1px solid rgba(255,77,109,0.18);border-radius:10px;padding:9px 11px;display:flex;gap:10px;align-items:center;animation:fu 0.3s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.hb-txt{font-size:0.82em;color:#fca5a5;flex:1;line-height:1.4;}
+.hb-r{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:42px;}
+.uv-btn{background:rgba(255,77,109,0.15);border:1px solid rgba(255,77,109,0.28);color:#ff4d6d;border-radius:8px;padding:4px 7px;font-size:0.75em;font-weight:700;cursor:pointer;width:100%;text-align:center;}
+.uv-btn.voted{opacity:0.45;cursor:default;}
+.tbar{height:2px;background:rgba(255,77,109,0.12);border-radius:2px;margin-top:5px;overflow:hidden;}
+.tfil{height:100%;background:#ff4d6d;border-radius:2px;transition:width 1s linear;}
+.hb-empty{text-align:center;color:#4a2530;font-size:0.78em;padding:16px;}
+
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:flex-end;justify-content:center;}
+.modal.active{display:flex;}
+.mbox{background:#1a1a2e;border-radius:24px 24px 0 0;padding:22px 18px 36px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;border:1px solid #2a2a3e;border-bottom:none;animation:su 0.28s ease;}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mh{font-family:'Space Grotesk',sans-serif;font-size:1.2em;font-weight:800;color:#e2e8f0;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
+.mx{background:rgba(255,255,255,0.08);border:none;color:#666;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:0.9em;}
+.bst{display:flex;flex-direction:column;gap:9px;margin-top:10px;}
+.mb{padding:13px;border:none;border-radius:11px;font-size:0.92em;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:opacity 0.15s;}
+.mb:active{opacity:0.85;}
+.mb.g{background:#10b981;color:white;}
+.mb.r{background:#ef4444;color:white;}
+.mb.a{background:#f59e0b;color:white;}
+.mb.t{background:#0d9488;color:white;}
+.mb.x{background:#1f2937;color:#6b7280;margin-top:6px;}
+.mi{width:100%;background:rgba(255,255,255,0.06);border:1px solid #2a2a3e;border-radius:10px;padding:11px;color:white;font-size:0.88em;font-family:'DM Sans',sans-serif;outline:none;margin-top:8px;}
+.mi:focus{border-color:#a78bfa;}
+.msel{width:100%;background:#1a1a2e;border:1px solid #2a2a3e;border-radius:10px;padding:11px;color:white;font-size:0.88em;font-family:'DM Sans',sans-serif;outline:none;margin-top:8px;}
+
+/* ADMIN OVERRIDE PANEL */
+.override-row{display:flex;gap:8px;margin-top:10px;}
+.or-btn{flex:1;padding:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;border-radius:10px;font-size:0.82em;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;}
+
+/* REFRESH */
+.ref-btn{position:fixed;bottom:20px;right:20px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:30px;padding:11px 17px;font-size:0.82em;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(102,126,234,0.4);z-index:999;font-family:'Space Grotesk',sans-serif;}
+
+/* TOAST */
+#toast{position:fixed;bottom:75px;left:50%;transform:translateX(-50%);background:#1e293b;color:#e2e8f0;padding:9px 18px;border-radius:12px;font-size:0.82em;z-index:9999;border:1px solid #334155;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;max-width:92vw;text-align:center;}
+
+@media(max-width:480px){
+  header h1{font-size:1.55em;}
+  .grid{grid-template-columns:1fr 1fr;gap:9px;}
+  .card{padding:11px;}
+  .ct{font-size:0.85em;}
+}
+</style>
 </head>
 <body>
-  <div class="box">
-    <h1>🚧 Site Under Maintenance</h1>
-    <p>We’re making improvements to BASEU Campus Monitor.</p>
-    <p>Please check back shortly.</p>
+<div id="toast"></div>
+<div id="admin-bar" onclick="adminLogout()">🔐 Admin · tap to exit</div>
+
+<div class="container">
+  <header>
+    <h1>🎓 FundBASEU Tracker</h1>
+    <p>Real-time campus status · by students, for students</p>
+    <a href="https://sway.cloud.microsoft/CuEoSACHmG0wvSfR?ref=Link&loc=play" target="_blank" class="upd-link">📢 FundBASEU Updates →</a>
+  </header>
+
+  <!-- NOTIF BANNER -->
+  <div class="notif-banner" id="notif-banner">
+    <div style="flex:1;">🔔 Get meal reminders at 7:30am · 12:30pm · 5pm · 7:30pm<div id="notif-st" style="font-size:0.72em;color:#818cf8;margin-top:3px;"></div></div>
+    <button class="notif-btn" id="notif-btn" onclick="reqNotif()">Enable</button>
   </div>
+
+  <!-- TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker-live"><div class="ldot"></div>LIVE</div>
+    <div class="ticker-vp">
+      <div class="ticker-tr" id="ttrack">
+        <span class="ti"><b>No activity yet...</b></span><span class="ti"><b>No activity yet...</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="s-box"><span class="s-num" id="liveCount">0</span><span class="s-lbl">👥 Live Now</span></div>
+    <div class="s-box"><span class="s-num" id="totalVis">0</span><span class="s-lbl">📊 Visitors</span></div>
+  </div>
+
+  <div class="sec-lbl">Campus Status</div>
+  <div class="grid">
+
+    <!-- MESS -->
+    <div class="card" id="mess-card" onclick="openModal('mess')">
+      <div class="ch"><span class="ct">🍽️ Mess</span><span class="ci">🍛</span></div>
+      <span class="bdg bgr" id="mess-avail">Not Updated</span>
+      <div class="cb cb-none" id="mess-cb">⬜ No votes yet</div>
+      <span class="bdg bb" id="mess-meal" style="margin-top:5px;"></span>
+      <div class="mc" id="mess-menu"></div>
+      <div class="vc" id="mess-vc"></div>
+      <div class="vc" id="mess-pend"></div>
+      <div class="tc" id="mess-ts"></div>
+    </div>
+
+    <!-- GYM -->
+    <div class="card" id="gym-card" onclick="openModal('gym')">
+      <div class="ch"><span class="ct">🏋️ Gym</span><span class="ci">💪</span></div>
+      <span class="bdg bgr" id="gym-status">Not Updated</span>
+      <div class="cb cb-none" id="gym-cb">⬜ No votes yet</div>
+      <div class="tc" id="gym-ts"></div>
+    </div>
+
+    <!-- NESCAFE -->
+    <div class="card" id="nescafe-card" onclick="openModal('nescafe')">
+      <div class="ch"><span class="ct">☕ Nescafé</span><span class="ci">🥤</span></div>
+      <span class="bdg bgr" id="nescafe-avail">Not Updated</span>
+      <div class="cb cb-none" id="nescafe-cb">⬜ No votes yet</div>
+      <div class="vc" id="nescafe-vc"></div>
+      <div class="vc" id="nescafe-pend"></div>
+      <div class="tc" id="nescafe-ts"></div>
+    </div>
+
+    <!-- NANDINI -->
+    <div class="card" id="nandini-card" onclick="openModal('nandini')">
+      <div class="ch"><span class="ct">🥛 Nandini</span><span class="ci">🧃</span></div>
+      <span class="bdg bgr" id="nandini-avail">Not Updated</span>
+      <div class="cb cb-none" id="nandini-cb">⬜ No votes yet</div>
+      <div class="vc" id="nandini-vc"></div>
+      <div class="vc" id="nandini-pend"></div>
+      <div class="tc" id="nandini-ts"></div>
+    </div>
+
+    <!-- BADMINTON -->
+    <div class="card" id="bad-card" onclick="openModal('bad')">
+      <div class="ch"><span class="ct">🏸 Badminton</span><span class="ci">🎾</span></div>
+      <span class="bdg bgr" id="bad-avail">Not Updated</span>
+      <div class="cb cb-none" id="bad-cb">⬜ No votes yet</div>
+      <div class="vc" id="bad-vc"></div>
+      <div class="vc" id="bad-pend"></div>
+      <div class="tc" id="bad-ts"></div>
+    </div>
+
+    <!-- PROF STATUS -->
+    <div class="card" id="prof-card" onclick="openModal('prof')">
+      <div class="ch"><span class="ct">👨‍🏫 Prof</span><span class="ci">🎓</span></div>
+      <span class="bdg bgr" id="prof-avail">Not Updated</span>
+      <div class="cb cb-none" id="prof-cb">⬜ No votes yet</div>
+      <div class="vc" id="prof-vc"></div>
+      <div class="vc" id="prof-pend"></div>
+      <div class="tc" id="prof-ts"></div>
+    </div>
+
+    <!-- SUGGESTIONS -->
+    <div class="card" onclick="openModal('sug')">
+      <div class="ch"><span class="ct">💡 Suggest</span><span class="ci">📝</span></div>
+      <span class="bdg bp">Fixes & Ideas</span>
+      <div class="tc" id="sug-count"></div>
+    </div>
+
+  </div>
+
+  <!-- ANNOUNCEMENTS -->
+  <div class="ann-wrap">
+    <div class="ann-title">📢 Announcements <span style="font-size:0.6em;color:#6b4fa0;font-weight:400;">12hr auto-expiry</span></div>
+    <div id="ann-list"><div class="ann-empty">No announcements yet</div></div>
+    <button class="ann-post-btn" onclick="openAnnPost()">+ Post Announcement (admin only)</button>
+  </div>
+
+  <!-- IMMEDIATE UPDATES -->
+  <div class="imm-wrap" id="imm-wrap" style="display:none;">
+    <div class="imm-title">🔴 Immediate Updates <span style="font-size:0.6em;color:#78350f;font-weight:400;margin-left:4px;">5 downvotes = removed</span></div>
+    <div id="imm-list"></div>
+  </div>
+
+  <!-- HEARTBEAT ZONE -->
+  <div class="hb-wrap">
+    <div class="hb-head">
+      <div class="hb-tit"><div class="pdot"></div>Heartbeat Zone</div>
+      <span style="font-size:0.68em;color:#7f3040;">anonymous · incubation</span>
+    </div>
+    <div class="hb-rules">
+      <strong>📋 How Heartbeat works:</strong>
+      • Post anonymously — max 80 characters<br>
+      • <strong style="color:#ff758c;">5 upvotes</strong> → graduates to 🔴 Immediate Updates<br>
+      • <strong style="color:#ff758c;">Auto-deletes in 10 min</strong> if under 5 upvotes<br>
+      • Use for urgent signals, crowd alerts, campus sightings<br>
+      • One upvote per person per post
+    </div>
+    <div class="hb-row">
+      <input class="hb-in" id="hb-txt" maxlength="80" placeholder="What's happening right now..." oninput="updateCC()">
+      <button class="btn-hb" onclick="postHB()">Post</button>
+    </div>
+    <div class="chct" id="chct">0 / 80</div>
+    <div class="hb-feed" id="hb-feed"><div class="hb-empty">No active posts · be the first</div></div>
+  </div>
+</div>
+
+<button class="ref-btn" onclick="location.reload()">🔄 Refresh</button>
+
+<!-- MODAL -->
+<div class="modal" id="modal" onclick="bgClose(event)">
+  <div class="mbox" id="mbox"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════════════════════════
+var ADMIN_PASS  = "fundbaseu2024";   // ← change this
+var T_MESS      = 3;
+var T_GYM       = 1;   // gym is instant (1 person confirms)
+var T_NESCAFE   = 3;
+var T_NANDINI   = 3;
+var T_BAD       = 2;
+var T_PROF      = 2;
+var HB_VOTES    = 5;
+var HB_TTL      = 600000;            // 10 min
+var IMM_DV      = 5;                 // downvotes to remove
+var ANN_EXPIRY  = 43200000;          // 12 hours
+
+// ════════════════════════════════════════════════════════
+//  FIREBASE
+// ════════════════════════════════════════════════════════
+firebase.initializeApp({
+  apiKey:       "AIzaSyBeVAkgLuLzq6uYo6M5begEMi_jwi-nAoU",
+  authDomain:   "fundbaseu-tracker.firebaseapp.com",
+  databaseURL:  "https://fundbaseu-tracker-default-rtdb.firebaseio.com",
+  projectId:    "fundbaseu-tracker"
+});
+var db = firebase.database();
+
+// presence
+var pr = db.ref("presence").push();
+pr.set(true); pr.onDisconnect().remove();
+db.ref("presence").on("value", function(s){ txt("liveCount", s.numChildren()); });
+
+// visitors
+db.ref("totalVisitors").transaction(function(c){ return (c||0)+1; });
+db.ref("totalVisitors").on("value", function(s){ txt("totalVis", s.val()||0); });
+
+// device id
+var devId = localStorage.getItem("did") || (function(){
+  var id="d_"+Math.random().toString(36).slice(2,11);
+  localStorage.setItem("did",id); return id;
+})();
+
+// ════════════════════════════════════════════════════════
+//  ADMIN
+// ════════════════════════════════════════════════════════
+var isAdmin = sessionStorage.getItem("adm")==="1";
+if (isAdmin) el("admin-bar").classList.add("show");
+
+function checkAdmin(){
+  if(isAdmin) return true;
+  var pw=prompt("🔐 Admin password:");
+  if(pw===ADMIN_PASS){
+    isAdmin=true; sessionStorage.setItem("adm","1");
+    el("admin-bar").classList.add("show");
+    toast("🔐 Admin access granted"); return true;
+  }
+  toast("❌ Wrong password"); return false;
+}
+function adminLogout(){
+  if(!confirm("Exit admin mode?")) return;
+  isAdmin=false; sessionStorage.removeItem("adm");
+  el("admin-bar").classList.remove("show");
+  toast("Logged out of admin");
+}
+
+// ════════════════════════════════════════════════════════
+//  TICKER
+// ════════════════════════════════════════════════════════
+db.ref("actLog").orderByChild("ts").limitToLast(20).on("value", function(snap){
+  var items=[]; snap.forEach(function(c){ items.push(c.val()); }); items.reverse();
+  if(!items.length) return;
+  var html=items.map(function(a){ return '<span class="ti"><b>'+ts(a.ts)+'</b> '+esc(a.msg)+'</span>'; }).join('');
+  el("ttrack").innerHTML=html+html;
+});
+function logAct(msg){ db.ref("actLog").push({msg:msg,ts:Date.now()}); }
+
+// ════════════════════════════════════════════════════════
+//  NOTIFICATIONS
+// ════════════════════════════════════════════════════════
+var nOn=false, lnk="";
+function initNotif(){
+  if(!("Notification" in window)) return;
+  if(Notification.permission==="granted"){ el("notif-banner").style.display="none"; startNotif(); }
+  else if(Notification.permission==="default") el("notif-banner").classList.add("show");
+}
+function reqNotif(){
+  el("notif-btn").textContent="...";
+  Notification.requestPermission().then(function(p){
+    if(p==="granted"){ el("notif-banner").classList.remove("show"); startNotif(); toast("🔔 Meal reminders on!"); }
+    else { el("notif-st").textContent="Denied — enable in browser settings"; el("notif-btn").textContent="Enable"; }
+  });
+}
+function startNotif(){ if(nOn) return; nOn=true; chkMeal(); setInterval(chkMeal,60000); }
+function chkMeal(){
+  if(Notification.permission!=="granted") return;
+  var n=new Date(),h=n.getHours(),m=n.getMinutes(),k=h+":"+m;
+  if(k===lnk) return;
+  var meals=[{h:7,m:30,t:"🍳 Breakfast is served!",b:"Head to mess — Breakfast ready!"},{h:12,m:30,t:"🍽️ Lunch time!",b:"Mess open for Lunch!"},{h:17,m:0,t:"☕ Snacks time!",b:"Snacks being served at mess!"},{h:19,m:30,t:"🌙 Dinner is ready!",b:"Dinner now served at mess!"}];
+  meals.forEach(function(x){ if(h===x.h&&m===x.m){ new Notification(x.t,{body:x.b}); lnk=k; } });
+}
+
+// ════════════════════════════════════════════════════════
+//  MESS MENU
+// ════════════════════════════════════════════════════════
+var bf13={Monday:"Vada+Sambar+Chutney+Shavige",Tuesday:"Poha+Fruits+Chowchow Bath+Chutney",Wednesday:"Plain Dosa+Aloo+Chutney+Egg",Thursday:"Bisi Belle Bath+Bread Jam+Fruits",Friday:"Green Moong Dosa+Oats+Chutney",Saturday:"Tomato Bath+Puliyogare+Chutney",Sunday:"Masala Dosa+Aloo+Chutney"};
+var bf24={Monday:"Millets Khichdi+Vada+Sambar+Idly",Tuesday:"Lemon Rice+Bread Jam+Fruits",Wednesday:"Ragi Dosa+Dalia+Tomato Chutney+Egg",Thursday:"Onion Uthappam+Mangalore Bajji+Chutney",Friday:"Dal Khichdi+Dosa+Chutney",Saturday:"Pongal+Bread Jam+Fruits",Sunday:"Set Dosa+Chutney"};
+var dm={Monday:{L:"Poori/Ragi Ball+Rice+Drumstick+Channa+Curd",S:"Cutlet+Tea",D:"Dal Makhni+Rice+Dal+Veg"},Tuesday:{L:"Methi Chapathi+Rice+Dal+Veg Pulav+Curd",S:"Kabuli Husli+Tea",D:"Soyabean+Radish Sambhar+Chapati"},Wednesday:{L:"Chapathi/Ragi+Rice+Paneer+Sprouts Sambhar",S:"Samosa+Tea",D:"Chapathi+Rice+Aloo+Rasam"},Thursday:{L:"Paratha+Rajma+Jeera Rice+Pudina Rice+Curd",S:"Vada Pav+Tea",D:"Chapathi+Egg Curry+Dal Palak+Salad"},Friday:{L:"Palak Chapati+Bhindi+Chicken Biryani+Curd",S:"Bhel Puri+Tea",D:"Chapathi+Rice+Dal+Veg"},Saturday:{L:"Chapathi+Rice+Dal+Mix Veg Beans+Curd",S:"Masala Vada+Tea",D:"Chapathi+Dal+Veg+Salad"},Sunday:{L:"Mushroom/Paneer Biryani+Salad",S:"Pav Bhaji+Tea",D:"Chapathi+Beetroot Palya+Veg"}};
+var DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+function wkPat(d){ var fd=new Date(d.getFullYear(),d.getMonth(),1),wk=Math.ceil((d.getDate()+fd.getDay())/7); return(wk===1||wk===3)?"w13":"w24"; }
+function nxMeal(){ var n=new Date(),h=n.getHours(),day=DAYS[n.getDay()]; if(h>=22){var t=new Date(n);t.setDate(t.getDate()+1);return{date:t,day:DAYS[t.getDay()],meal:"Breakfast"};} if(h>=18)return{date:n,day:day,meal:"Dinner"}; if(h>=15)return{date:n,day:day,meal:"Snacks"}; if(h>=10)return{date:n,day:day,meal:"Lunch"}; return{date:n,day:day,meal:"Breakfast"}; }
+function getMnu(date,day,meal){ if(meal==="Breakfast") return (wkPat(date)==="w13"?bf13:bf24)[day]; var k={Lunch:"L",Snacks:"S",Dinner:"D"}[meal]; return dm[day][k]; }
+function updMess(){ var n=nxMeal(); txt("mess-meal","Next: "+n.meal); txt("mess-menu",getMnu(n.date,n.day,n.meal)); }
+updMess(); setInterval(updMess,60000);
+
+// ════════════════════════════════════════════════════════
+//  COMMUNITY BADGE
+// ════════════════════════════════════════════════════════
+function setCB(id,votes,done,thresh){
+  var e=el(id+"-cb"); if(!e) return;
+  if(done){ e.className="cb cb-ok"; e.innerHTML="✅ Community Confirmed"; }
+  else if(votes>=1){ e.className="cb cb-wait"; e.innerHTML="⚠️ Awaiting ("+votes+"/"+(thresh||3)+")"; }
+  else{ e.className="cb cb-none"; e.innerHTML="⬜ No votes yet"; }
+}
+
+// ════════════════════════════════════════════════════════
+//  ★ BULLETPROOF VOTING SYSTEM ★
+//
+//  Root cause of the glitch:
+//  - `_votes/{value}` transaction only returns count for that ONE option
+//  - Multiple voters can each think they are the 3rd voter if timing overlaps
+//  - Firebase `.remove()` on _votes triggers _votes listener with t=0, which
+//    was resetting the community badge even after confirmation
+//
+//  Fix strategy:
+//  - Store a SINGLE integer counter at `_voteCount` (total votes, not split by option)
+//  - Store what value is being voted for at `_votedValue`
+//  - Transaction on `_voteCount` atomically increments — Firebase guarantees this
+//  - When count reaches threshold → write status node → clean up
+//  - Confirmed state is tracked in JS AND stored in Firebase status node
+//  - _votes listener is REMOVED — replaced by _voteCount listener
+//  - Status listener sets confirmed=true so nothing can override it
+// ════════════════════════════════════════════════════════
+
+var confirmed = {};  // tracks per-place whether status is confirmed
+
+// Core vote function — now uses atomic _voteCount + _votedValue
+function doVote(place, value, thresh){
+  var dvRef = db.ref(place+"_dv/"+devId);
+  dvRef.once("value", function(snap){
+    if(snap.exists()) return toast("Already voted for "+place);
+
+    // Step 1: lock in device vote immediately
+    dvRef.set({value:value, ts:Date.now()});
+
+    // Step 2: record what value this place is being voted for
+    // (only set if not already set, or if same value)
+    db.ref(place+"_votedFor").once("value", function(vfSnap){
+      var currentVotedFor = vfSnap.val();
+
+      // If someone else started a different vote, reject
+      if(currentVotedFor && currentVotedFor !== value){
+        dvRef.remove(); // undo our device lock
+        return toast("Vote in progress for: "+currentVotedFor+". Wait for it to resolve.");
+      }
+
+      // Set votedFor if not set
+      if(!currentVotedFor) db.ref(place+"_votedFor").set(value);
+
+      // Step 3: atomically increment the count
+      db.ref(place+"_voteCount").transaction(function(current){
+        return (current||0)+1;
+      }, function(err, committed, snap){
+        if(err||!committed||!snap){ dvRef.remove(); return toast("Error voting, try again"); }
+        var count = snap.val();
+        var rem = thresh - count;
+
+        if(count >= thresh){
+          // ★ CONFIRMED: write status first, THEN clean up
+          db.ref(place).set({status:value, ts:Date.now()}, function(){
+            // Clean up voting nodes only AFTER status is saved
+            db.ref(place+"_voteCount").remove();
+            db.ref(place+"_votedFor").remove();
+            db.ref(place+"_dv").remove();
+            db.ref(place+"_pend").remove();
+          });
+          logAct("✅ "+thresh+"/"+thresh+" confirmed: "+place+" → "+value);
+          toast("✅ Community confirmed!");
+        } else {
+          db.ref(place+"_pend").set("Awaiting "+rem+" more confirmation(s)");
+          logAct("🗳️ "+place+" vote "+count+"/"+thresh+": "+value);
+          toast("Vote recorded! "+rem+" more needed.");
+        }
+      });
+    });
+  });
+  closeModal();
+}
+
+// Admin override: set status directly, bypass voting
+function adminOverride(place, value){
+  if(!checkAdmin()) return;
+  db.ref(place).set({status:value, ts:Date.now()});
+  // Clean up any in-progress vote
+  db.ref(place+"_voteCount").remove();
+  db.ref(place+"_votedFor").remove();
+  db.ref(place+"_dv").remove();
+  db.ref(place+"_pend").remove();
+  logAct("🔐 Admin override: "+place+" → "+value);
+  toast("✅ Override applied!");
+  closeModal();
+}
+
+// ════════════════════════════════════════════════════════
+//  STATUS LISTENERS — unified, clean
+// ════════════════════════════════════════════════════════
+function listenPlace(place, thresh, renderFn){
+  // Main status listener
+  db.ref(place).on("value", function(snap){
+    var d=snap.val();
+    if(!d || !d.status){
+      confirmed[place]=false;
+      setCB(place,0,false,thresh);
+      renderFn(null);
+      return;
+    }
+    // Status exists = confirmed
+    confirmed[place]=true;
+    setCB(place,0,true,thresh);
+    renderFn(d);
+  });
+
+  // Vote count listener (replaces old _votes listener)
+  db.ref(place+"_voteCount").on("value", function(snap){
+    var count = snap.val()||0;
+    var vcel = el(place+"-vc");
+    if(vcel) vcel.textContent = count>0 ? "Votes: "+count : "";
+    // Only update badge if NOT yet confirmed
+    if(!confirmed[place]) setCB(place,count,false,thresh);
+  });
+
+  // Pending message
+  db.ref(place+"_pend").on("value", function(snap){
+    var pel = el(place+"-pend");
+    if(pel) pel.textContent = (!confirmed[place] && snap.val()) ? snap.val() : "";
+  });
+}
+
+// MESS
+listenPlace("mess", T_MESS, function(d){
+  var card=el("mess-card"), av=el("mess-avail"), tEl=el("mess-ts");
+  if(!d){ setClass(card,"card"); setClass(av,"bdg bgr"); av.textContent="Not Updated"; if(tEl) tEl.textContent=""; return; }
+  if(d.status==="Food Available"){ setClass(card,"card food-yes"); setClass(av,"bdg bg"); av.textContent="✅ Food Available"; }
+  else { setClass(card,"card food-no"); setClass(av,"bdg br"); av.textContent="❌ Food Not Available"; }
+  if(tEl) tEl.textContent=ago(d.ts);
+});
+
+// GYM — has voting too (T_GYM=1 means first person confirms instantly)
+listenPlace("gym", T_GYM, function(d){
+  var card=el("gym-card"), s=el("gym-status"), tEl=el("gym-ts");
+  if(!d){ setClass(card,"card"); setClass(s,"bdg bgr"); s.textContent="Not Updated"; if(tEl) tEl.textContent=""; return; }
+  if(d.status==="Open · Free"){ setClass(card,"card gym-free"); setClass(s,"bdg bg"); s.textContent="✅ Open · Free"; }
+  else if(d.status==="Open · Crowded"){ setClass(card,"card gym-busy"); setClass(s,"bdg ba"); s.textContent="⚠️ Crowded"; }
+  else { setClass(card,"card gym-shut"); setClass(s,"bdg br"); s.textContent="🔒 Closed"; }
+  if(tEl) tEl.textContent=ago(d.ts);
+});
+
+// NESCAFE
+listenPlace("nescafe", T_NESCAFE, function(d){
+  var card=el("nescafe-card"), s=el("nescafe-avail"), tEl=el("nescafe-ts");
+  if(!d){ setClass(card,"card"); setClass(s,"bdg bgr"); s.textContent="Not Updated"; if(tEl) tEl.textContent=""; return; }
+  if(d.status==="Open"){ setClass(card,"card shop-open"); setClass(s,"bdg bg"); s.textContent="✅ Open"; }
+  else { setClass(card,"card shop-shut"); setClass(s,"bdg br"); s.textContent="🔒 Closed"; }
+  if(tEl) tEl.textContent=ago(d.ts);
+});
+
+// NANDINI
+listenPlace("nandini", T_NANDINI, function(d){
+  var card=el("nandini-card"), s=el("nandini-avail"), tEl=el("nandini-ts");
+  if(!d){ setClass(card,"card"); setClass(s,"bdg bgr"); s.textContent="Not Updated"; if(tEl) tEl.textContent=""; return; }
+  if(d.status==="Open"){ setClass(card,"card shop-open"); setClass(s,"bdg bg"); s.textContent="✅ Open"; }
+  else { setClass(card,"card shop-shut"); setClass(s,"bdg br"); s.textContent="🔒 Closed"; }
+  if(tEl) tEl.textContent=ago(d.ts);
+});
+
+// BADMINTON
+listenPlace("bad", T_BAD, function(d){
+  var s=el("bad-avail"), tEl=el("bad-ts");
+  if(!d||!s){ return; }
+  var st=d.status||"Not Updated";
+  var cls=st==="Full"?"bdg br":st.includes("1")||st.includes("2")?"bdg ba":"bdg bg";
+  setClass(s,cls); s.textContent=st;
+  if(tEl) tEl.textContent=ago(d.ts);
+});
+
+// PROF
+listenPlace("prof", T_PROF, function(d){
+  var card=el("prof-card"), s=el("prof-avail"), tEl=el("prof-ts");
+  if(!d){ setClass(card,"card"); setClass(s,"bdg bgr"); s.textContent="Not Updated"; if(tEl) tEl.textContent=""; return; }
+  var cls="bdg bb";
+  if(d.status==="In Class") cls="bdg bg";
+  else if(d.status==="On Leave") cls="bdg br";
+  else if(d.status==="In Cabin") cls="bdg bt";
+  else if(d.status==="Admin") cls="bdg ba";
+  setClass(s,cls); s.textContent=d.status;
+  if(tEl) tEl.textContent=ago(d.ts);
+});
+
+// Suggestions count
+db.ref("suggestions").on("value", function(snap){ txt("sug-count",(snap.numChildren()||0)+" suggestion(s)"); });
+
+// ════════════════════════════════════════════════════════
+//  MODAL
+// ════════════════════════════════════════════════════════
+function openModal(place){
+  var h='<div class="mh"><span>';
+  var adminOverrideRow = '';
+
+  if(place==='mess'){
+    adminOverrideRow = isAdmin ?
+      '<div class="override-row" style="margin-top:14px;">'+
+      '<div style="font-size:0.72em;color:#ef4444;margin-bottom:6px;font-weight:700;">🔐 Admin Override</div></div>'+
+      '<div class="override-row">'+
+      '<button class="or-btn" onclick="adminOverride(\'mess\',\'Food Available\')">Force: Available</button>'+
+      '<button class="or-btn" onclick="adminOverride(\'mess\',\'Food Not Available\')">Force: Not Available</button></div>' : '';
+    h+='🍽️ Mess</span><button class="mx" onclick="closeModal()">✕</button></div>';
+    h+='<p style="color:#888;font-size:0.8em;margin-bottom:10px;">Needs '+T_MESS+' confirmations</p>';
+    h+='<div class="bst">'+
+      '<button class="mb g" onclick="doVote(\'mess\',\'Food Available\','+T_MESS+')">✅ Food Available</button>'+
+      '<button class="mb r" onclick="doVote(\'mess\',\'Food Not Available\','+T_MESS+')">❌ Food Not Available</button>'+
+      '</div>'+adminOverrideRow+
+      '<button class="mb x" onclick="closeModal()">Close</button>';
+
+  } else if(place==='gym'){
+    adminOverrideRow = isAdmin ?
+      '<div style="font-size:0.72em;color:#ef4444;margin:14px 0 6px;font-weight:700;">🔐 Admin Override</div>'+
+      '<div class="override-row">'+
+      '<button class="or-btn" onclick="adminOverride(\'gym\',\'Open · Free\')">Force: Free</button>'+
+      '<button class="or-btn" onclick="adminOverride(\'gym\',\'Open · Crowded\')">Force: Crowded</button>'+
+      '<button class="or-btn" onclick="adminOverride(\'gym\',\'Closed\')">Force: Closed</button></div>' : '';
+    h+='🏋️ Gym</span><button class="mx" onclick="closeModal()">✕</button></div>';
+    h+='<div class="bst">'+
+      '<button class="mb g" onclick="doVote(\'gym\',\'Open · Free\','+T_GYM+')">✅ Open · Free</button>'+
+      '<button class="mb a" onclick="doVote(\'gym\',\'Open · Crowded\','+T_GYM+')">⚠️ Open · Crowded</button>'+
+      '<button class="mb r" onclick="doVote(\'gym\',\'Closed\','+T_GYM+')">🔒 Closed</button>'+
+      '</div>'+adminOverrideRow+
+      '<button class="mb x" onclick="closeModal()">Close</button>';
+
+  } else if(place==='nescafe'){
+    adminOverrideRow = isAdmin ?
+      '<div style="font-size:0.72em;color:#ef4444;margin:14px 0 6px;font-weight:700;">🔐 Admin Override</div>'+
+      '<div class="override-row">'+
+      '<button class="or-btn" onclick="adminOverride(\'nescafe\',\'Open\')">Force: Open</button>'+
+      '<button class="or-btn" onclick="adminOverride(\'nescafe\',\'Closed\')">Force: Closed</button></div>' : '';
+    h+='☕ Nescafé</span><button class="mx" onclick="closeModal()">✕</button></div>';
+    h+='<p style="color:#888;font-size:0.8em;margin-bottom:10px;">Needs '+T_NESCAFE+' confirmations</p>';
+    h+='<div class="bst">'+
+      '<button class="mb g" onclick="doVote(\'nescafe\',\'Open\','+T_NESCAFE+')">✅ Open</button>'+
+      '<button class="mb r" onclick="doVote(\'nescafe\',\'Closed\','+T_NESCAFE+')">🔒 Closed</button>'+
+      '</div>'+adminOverrideRow+
+      '<button class="mb x" onclick="closeModal()">Close</button>';
+
+  } else if(place==='nandini'){
+    adminOverrideRow = isAdmin ?
+      '<div style="font-size:0.72em;color:#ef4444;margin:14px 0 6px;font-weight:700;">🔐 Admin Override</div>'+
+      '<div class="override-row">'+
+      '<button class="or-btn" onclick="adminOverride(\'nandini\',\'Open\')">Force: Open</button>'+
+      '<button class="or-btn" onclick="adminOverride(\'nandini\',\'Closed\')">Force: Closed</button></div>' : '';
+    h+='🥛 Nandini</span><button class="mx" onclick="closeModal()">✕</button></div>';
+    h+='<p style="color:#888;font-size:0.8em;margin-bottom:10px;">Needs '+T_NANDINI+' confirmations</p>';
+    h+='<div class="bst">'+
+      '<button class="mb g" onclick="doVote(\'nandini\',\'Open\','+T_NANDINI+')">✅ Open</button>'+
+      '<button class="mb r" onclick="doVote(\'nandini\',\'Closed\','+T_NANDINI+')">🔒 Closed</button>'+
+      '</div>'+adminOverrideRow+
+      '<button class="mb x" onclick="closeModal()">Close</button>';
+
+  } else if(place==='bad'){
+    adminOverrideRow = isAdmin ?
+      '<div style="font-size:0.72em;color:#ef4444;margin:14px 0 6px;font-weight:700;">🔐 Admin Override</div>'+
+      '<div class="override-row">'+
+      '<button class="or-btn" onclick="adminOverride(\'bad\',\'4 Free\')">All 4 Free</button>'+
+      '<button class="or-btn" onclick="adminOverride(\'bad\',\'Full\')">All Full</button></div>' : '';
+    h+='🏸 Badminton</span><button class="mx" onclick="closeModal()">✕</button></div>';
+    h+='<p style="color:#888;font-size:0.8em;margin-bottom:10px;">How many courts FREE? (needs '+T_BAD+')</p>';
+    h+='<div class="bst">'+
+      '<button class="mb g" onclick="doVote(\'bad\',\'4 Free\','+T_BAD+')">🟢 All 4 Free</button>'+
+      '<button class="mb g" onclick="doVote(\'bad\',\'3 Free\','+T_BAD+')">🟢 3 Free</button>'+
+      '<button class="mb a" onclick="doVote(\'bad\',\'2 Free\','+T_BAD+')">🟡 2 Free</button>'+
+      '<button class="mb a" onclick="doVote(\'bad\',\'1 Free\','+T_BAD+')">🟡 1 Free</button>'+
+      '<button class="mb r" onclick="doVote(\'bad\',\'Full\','+T_BAD+')">🔴 All Full</button>'+
+      '</div>'+adminOverrideRow+
+      '<button class="mb x" onclick="closeModal()">Close</button>';
+
+  } else if(place==='prof'){
+    adminOverrideRow = isAdmin ?
+      '<div style="font-size:0.72em;color:#ef4444;margin:14px 0 6px;font-weight:700;">🔐 Admin Override</div>'+
+      '<div class="override-row">'+
+      '<button class="or-btn" onclick="adminOverride(\'prof\',\'In Class\')">In Class</button>'+
+      '<button class="or-btn" onclick="adminOverride(\'prof\',\'In Cabin\')">In Cabin</button>'+
+      '<button class="or-btn" onclick="adminOverride(\'prof\',\'Admin\')">Admin</button>'+
+      '<button class="or-btn" onclick="adminOverride(\'prof\',\'On Leave\')">On Leave</button></div>' : '';
+    h+='👨‍🏫 Prof Status</span><button class="mx" onclick="closeModal()">✕</button></div>';
+    h+='<p style="color:#888;font-size:0.8em;margin-bottom:10px;">Where is the prof? (needs '+T_PROF+' confirmations)</p>';
+    h+='<div class="bst">'+
+      '<button class="mb g" onclick="doVote(\'prof\',\'In Class\','+T_PROF+')">🏫 In Class</button>'+
+      '<button class="mb t" onclick="doVote(\'prof\',\'In Cabin\','+T_PROF+')">🚪 In Cabin</button>'+
+      '<button class="mb a" onclick="doVote(\'prof\',\'Admin\','+T_PROF+')">🏢 Admin Block</button>'+
+      '<button class="mb r" onclick="doVote(\'prof\',\'On Leave\','+T_PROF+')">🏖️ On Leave</button>'+
+      '</div>'+adminOverrideRow+
+      '<button class="mb x" onclick="closeModal()">Close</button>';
+
+  } else if(place==='sug'){
+    h+='💡 Suggestions</span><button class="mx" onclick="closeModal()">✕</button></div>';
+    h+='<textarea class="mi" id="sug-in" rows="4" placeholder="Share an idea or report a bug..."></textarea>';
+    h+='<div class="bst"><button class="mb g" onclick="doSug()">Submit</button></div>';
+    h+='<hr style="border:none;border-top:1px solid #2a2a3e;margin:14px 0;">';
+    h+='<div id="sug-feed" style="max-height:200px;overflow-y:auto;"></div>';
+    h+='<button class="mb x" style="margin-top:10px;" onclick="closeModal()">Close</button>';
+    setTimeout(function(){
+      db.ref("suggestions").orderByChild("ts").limitToLast(10).once("value",function(snap){
+        var a=[]; snap.forEach(function(c){ a.push(c.val()); }); a.reverse();
+        var e=el("sug-feed"); if(!e) return;
+        e.innerHTML=a.length?a.map(function(s){
+          return '<div style="background:rgba(255,255,255,0.03);border:1px solid #2a2a3e;border-radius:9px;padding:9px;margin-bottom:7px;font-size:0.8em;color:#94a3b8;">'+esc(s.text||'')+'<div style="font-size:0.7em;color:#444;margin-top:3px;">'+ago(s.ts)+'</div></div>';
+        }).join(''):'<p style="color:#444;text-align:center;padding:10px;">No suggestions yet</p>';
+      });
+    },100);
+  }
+
+  el("mbox").innerHTML=h;
+  el("modal").classList.add("active");
+}
+
+function closeModal(){ el("modal").classList.remove("active"); }
+function bgClose(e){ if(e.target===el("modal")) closeModal(); }
+
+// ════════════════════════════════════════════════════════
+//  SUGGESTIONS
+// ════════════════════════════════════════════════════════
+function doSug(){
+  var t=(el("sug-in")||{}).value||""; t=t.trim();
+  if(!t) return alert("Please enter something");
+  db.ref("suggestions").push({text:t,ts:Date.now()});
+  logAct("💡 New suggestion submitted");
+  toast("Thanks!"); closeModal();
+}
+
+// ════════════════════════════════════════════════════════
+//  ANNOUNCEMENTS
+// ════════════════════════════════════════════════════════
+function openAnnPost(){
+  if(!checkAdmin()) return;
+  var h='<div class="mh"><span>📢 Post Announcement</span><button class="mx" onclick="closeModal()">✕</button></div>';
+  h+='<textarea class="mi" id="ann-in" rows="4" placeholder="Announcement text..."></textarea>';
+  h+='<select class="msel" id="ann-tag"><option value="general">General</option><option value="mess">🍛 Mess</option><option value="event">🎉 Event</option><option value="academic">📚 Academic</option></select>';
+  h+='<div class="bst"><button class="mb g" onclick="postAnn()">Post Announcement</button><button class="mb x" onclick="closeModal()">Cancel</button></div>';
+  el("mbox").innerHTML=h; el("modal").classList.add("active");
+}
+
+function postAnn(){
+  var txt=(el("ann-in")||{}).value||""; txt=txt.trim();
+  var tag=(el("ann-tag")||{}).value||"general";
+  if(!txt) return alert("Please enter text");
+  db.ref("announcements").push({text:txt,tag:tag,ts:Date.now()});
+  logAct("📢 Announcement: \""+txt.slice(0,28)+"\"");
+  toast("📢 Posted!"); closeModal();
+}
+
+function delAnn(id){
+  if(!checkAdmin()) return;
+  if(!confirm("Delete this announcement?")) return;
+  db.ref("announcements/"+id).remove();
+  logAct("🗑️ Announcement deleted (admin)");
+  toast("Deleted");
+}
+
+function cleanAnn(){
+  db.ref("announcements").once("value",function(snap){ var now=Date.now(); snap.forEach(function(c){ var d=c.val(); if(d&&(now-d.ts)>ANN_EXPIRY) db.ref("announcements/"+c.key).remove(); }); });
+}
+cleanAnn(); setInterval(cleanAnn,300000);
+
+db.ref("announcements").orderByChild("ts").on("value",function(snap){
+  var posts=[],now=Date.now();
+  snap.forEach(function(c){ var d=c.val(); if(d&&(now-d.ts)<ANN_EXPIRY) posts.push({id:c.key,text:d.text,tag:d.tag||"general",ts:d.ts}); });
+  posts.reverse();
+  var con=el("ann-list");
+  if(!posts.length){ con.innerHTML='<div class="ann-empty">No announcements yet</div>'; return; }
+  con.innerHTML=posts.map(function(p){
+    var exp=Math.ceil((ANN_EXPIRY-(now-p.ts))/60000);
+    var expTxt=exp>60?Math.ceil(exp/60)+"hr left":exp+"min left";
+    return '<div class="ann-card">'+
+      '<div class="ann-txt">'+esc(p.text)+'</div>'+
+      '<div class="ann-meta">'+
+        '<span class="ann-tag tag-'+p.tag+'">'+p.tag+'</span>'+
+        '<span class="ann-ts">'+ago(p.ts)+'</span>'+
+        '<span class="ann-exp">⏱ '+expTxt+'</span>'+
+        (isAdmin?'<button class="ann-del" onclick="delAnn(\''+p.id+'\')">🗑 Delete</button>':'')+
+      '</div></div>';
+  }).join('');
+});
+
+// ════════════════════════════════════════════════════════
+//  IMMEDIATE UPDATES + DOWNVOTES
+// ════════════════════════════════════════════════════════
+db.ref("immediateUpdates").orderByChild("ts").limitToLast(10).on("value",function(snap){
+  var sec=el("imm-wrap"),con=el("imm-list"),posts=[];
+  snap.forEach(function(c){ posts.push({id:c.key,...c.val()}); });
+  posts.reverse();
+  if(!posts.length){ sec.style.display="none"; return; }
+  sec.style.display="block";
+  con.innerHTML=posts.map(function(p){
+    var dv=p.downvotes||0, dvd=!!localStorage.getItem("idv_"+p.id);
+    return '<div class="imm-card">'+esc(p.text)+
+      '<div class="imm-meta">'+
+        '🔴 Crowd verified · '+ago(p.ts)+
+        '&nbsp;·&nbsp;<span style="color:#92400e;">'+dv+'/5</span>'+
+        '<button class="dv-btn'+(dvd?' dv-done':'')+'" onclick="'+
+          (dvd?'toast(\'Already downvoted\')':'dvImm(\''+p.id+'\')')+
+        '">'+(dvd?'👎 Voted':'👎 Remove')+'</button>'+
+        (isAdmin?'<button class="ann-del" onclick="admDelImm(\''+p.id+'\')">🗑</button>':'')+
+      '</div></div>';
+  }).join('');
+});
+
+function dvImm(id){
+  var k="idv_"+id; if(localStorage.getItem(k)) return toast("Already downvoted");
+  localStorage.setItem(k,"1");
+  db.ref("immediateUpdates/"+id).transaction(function(d){ if(!d) return d; d.downvotes=(d.downvotes||0)+1; return d; },function(err,ok,snap){
+    if(!snap) return;
+    var d=snap.val();
+    if(d&&d.downvotes>=IMM_DV){ db.ref("immediateUpdates/"+id).remove(); logAct("🗑️ Update removed by "+IMM_DV+" downvotes"); toast("Post removed by community"); }
+    else toast("Downvoted ("+(d?d.downvotes:1)+"/5)");
+  });
+}
+function admDelImm(id){
+  if(!checkAdmin()) return;
+  db.ref("immediateUpdates/"+id).remove();
+  logAct("🗑️ Immediate update deleted (admin)");
+  toast("Deleted");
+}
+
+// ════════════════════════════════════════════════════════
+//  HEARTBEAT
+// ════════════════════════════════════════════════════════
+function updateCC(){ var v=el("hb-txt").value,c=el("chct"); c.textContent=v.length+" / 80"; c.className="chct"+(v.length>70?" warn":""); }
+function postHB(){
+  var t=el("hb-txt").value.trim();
+  if(!t) return alert("Write something");
+  if(t.length>80) return alert("Max 80 chars");
+  db.ref("heartbeat").push({text:t,ts:Date.now(),upvotes:0,graduated:false});
+  logAct("💗 Heartbeat: \""+t.slice(0,28)+(t.length>28?"…":"")+"\"");
+  el("hb-txt").value=""; el("chct").textContent="0 / 80";
+}
+function upvoteHB(id){
+  var k="hbv_"+id; if(localStorage.getItem(k)) return toast("Already upvoted");
+  localStorage.setItem(k,"1");
+  db.ref("heartbeat/"+id).transaction(function(d){ if(!d) return d; d.upvotes=(d.upvotes||0)+1; return d; },function(err,ok,snap){
+    if(!snap) return; var d=snap.val();
+    if(d&&d.upvotes>=HB_VOTES&&!d.graduated){
+      db.ref("immediateUpdates").push({text:d.text,ts:Date.now()});
+      db.ref("heartbeat/"+id).update({graduated:true});
+      logAct("🔴 Heartbeat graduated!");
+      setTimeout(function(){ db.ref("heartbeat/"+id).remove(); },2500);
+    }
+  });
+}
+function cleanHB(){ db.ref("heartbeat").once("value",function(snap){ var now=Date.now(); snap.forEach(function(c){ var d=c.val(); if(d&&!d.graduated&&(now-d.ts)>HB_TTL) db.ref("heartbeat/"+c.key).remove(); }); }); }
+cleanHB(); setInterval(cleanHB,30000);
+
+db.ref("heartbeat").on("value",function(snap){
+  var feed=el("hb-feed"),now=Date.now(),posts=[];
+  snap.forEach(function(c){ var d=c.val(); if(d&&!d.graduated) posts.push({id:c.key,...d}); });
+  posts.sort(function(a,b){ return b.ts-a.ts; });
+  if(!posts.length){ feed.innerHTML='<div class="hb-empty">No active posts · be the first</div>'; return; }
+  feed.innerHTML=posts.map(function(p){
+    var voted=!!localStorage.getItem("hbv_"+p.id);
+    var rem=Math.max(0,HB_TTL-(now-p.ts)),pct=(rem/HB_TTL)*100,mins=Math.ceil(rem/60000),uv=p.upvotes||0;
+    return '<div class="hb-card">'+
+      '<div style="flex:1;">'+
+        '<div class="hb-txt">'+esc(p.text)+'</div>'+
+        '<div style="font-size:0.62em;color:#7f3040;margin-top:3px;">⏱ '+mins+'min left · '+uv+'/'+HB_VOTES+' upvotes</div>'+
+        '<div class="tbar"><div class="tfil" style="width:'+pct+'%"></div></div>'+
+      '</div>'+
+      '<div class="hb-r"><button class="uv-btn'+(voted?' voted':'')+'" onclick="'+(voted?'toast(\'Already upvoted\')':'upvoteHB(\''+p.id+'\')')+'">👍 '+uv+'</button></div>'+
+    '</div>';
+  }).join('');
+});
+
+// ════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════
+function el(id){ return document.getElementById(id); }
+function txt(id,v){ var e=el(id); if(e) e.textContent=v; }
+function setClass(e,c){ if(e) e.className=c; }
+function ago(t){ if(!t) return ""; var m=Math.floor((Date.now()-t)/60000); if(m<1) return "just now"; if(m===1) return "1min ago"; if(m<60) return m+"min ago"; var h=Math.floor(m/60); if(h<24) return h+"hr ago"; return Math.floor(h/24)+"d ago"; }
+function ts(t){ if(!t) return ""; var d=new Date(t); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function toast(msg){ var t=el("toast"); t.textContent=msg; t.style.opacity="1"; clearTimeout(t._t); t._t=setTimeout(function(){ t.style.opacity="0"; },2800); }
+
+// ════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════
+initNotif();
+</script>
 </body>
 </html>
