@@ -1008,7 +1008,7 @@ if(localStorage.getItem("theme")==="dark") document.body.classList.remove("light
 // ═══════════════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════════════
-var ADMIN_PASS = "fundbaseu2024"; // ← change this
+var ILOCK = "fundbaseu2024"; // ← change this
 //Voting thresholds
 var T_MESS=3, T_GYM=3, T_NESCAFE=2, T_NANDINI=2, T_BAD=2, T_DOC=1, T_PROF=2;
 // Time thresholds (ms)
@@ -1114,7 +1114,7 @@ if(isAdmin) ge("admin-bar").classList.add("show");
 function checkAdmin(){
   if(isAdmin) return true;
   var pw=prompt("🔐 Admin password:");
-  if(pw===ADMIN_PASS){ isAdmin=true; sessionStorage.setItem("adm","1"); ge("admin-bar").classList.add("show"); toast("🔐 Admin access granted"); return true; }
+  if(pw===ILOCK){ isAdmin=true; sessionStorage.setItem("adm","1"); ge("admin-bar").classList.add("show"); toast("🔐 Admin access granted"); return true; }
   toast("❌ Wrong password"); return false;
 }
 function adminLogout(){ if(!confirm("Exit admin?")) return; isAdmin=false; sessionStorage.removeItem("adm"); ge("admin-bar").classList.remove("show"); toast("Logged out"); }
