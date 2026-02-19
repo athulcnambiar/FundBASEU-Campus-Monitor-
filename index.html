@@ -779,6 +779,142 @@ body.light-theme .ann-wrap{
   box-shadow:0 4px 18px rgba(139,92,246,0.14);
 }
 
+/* ═══ NIGHT BANNER ═══ */
+.night-banner{
+  display:none;
+  background:linear-gradient(135deg,rgba(15,10,40,0.95),rgba(30,10,60,0.95));
+  border:1px solid rgba(139,92,246,0.4);
+  border-radius:var(--radius-lg);
+  padding:22px 20px;
+  margin:10px 0 16px;
+  text-align:center;
+  box-shadow:0 8px 32px rgba(99,0,255,0.2);
+}
+.night-banner.show{display:block;}
+.night-banner-emoji{font-size:2em;margin-bottom:8px;}
+.night-banner-text{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:1.3em;font-weight:800;
+  background:linear-gradient(135deg,#a78bfa,#818cf8,#c4b5fd);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  letter-spacing:-0.3px;
+}
+.night-banner-sub{font-size:0.78em;color:#7c6fa0;margin-top:5px;font-weight:500;}
+
+/* ═══ NIGHT MASK (tiles after Campus Uno during night) ═══ */
+.night-mask-wrap{position:relative;}
+.night-overlay{
+  display:none;
+  position:absolute;inset:0;
+  background:rgba(11,11,24,0.88);
+  border-radius:var(--radius-lg);
+  z-index:50;
+  align-items:center;justify-content:center;
+  backdrop-filter:blur(3px);
+}
+.night-overlay.show{display:flex;}
+.night-overlay-txt{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:0.82em;font-weight:700;color:#6b5fa0;
+  text-align:center;letter-spacing:0.5px;
+}
+body.light-theme .night-overlay{background:rgba(200,200,240,0.88);}
+body.light-theme .night-overlay-txt{color:#9980c0;}
+
+/* ═══ SUGGEST TILE — open big card ═══ */
+.suggest-open-wrap{
+  background:var(--bg-card);
+  border:2px solid rgba(139,92,246,0.35);
+  border-radius:var(--radius-lg);
+  padding:18px 18px 14px;
+  margin-bottom:10px;
+  box-shadow:0 6px 24px rgba(139,92,246,0.15);
+}
+.suggest-open-header{
+  display:flex;align-items:center;gap:10px;margin-bottom:12px;
+}
+.suggest-open-icon{font-size:1.4em;}
+.suggest-open-title{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:1em;font-weight:800;color:var(--text-main);
+}
+.suggest-open-sub{font-size:0.72em;color:var(--text-muted);margin-top:2px;}
+.suggest-open-input{
+  width:100%;background:var(--bg-panel);border:1px solid var(--border-main);
+  border-radius:var(--radius-sm);padding:11px 12px;color:var(--text-main);
+  font-size:0.85em;font-family:'Inter',sans-serif;outline:none;
+  resize:none;transition:border-color 0.2s;min-height:80px;
+}
+.suggest-open-input:focus{border-color:var(--accent-violet);}
+.suggest-open-input::placeholder{color:var(--text-faint);}
+.suggest-open-btn{
+  background:linear-gradient(135deg,#7c3aed,#6366f1);color:white;border:none;
+  border-radius:var(--radius-sm);padding:10px 20px;font-weight:700;font-size:0.85em;
+  cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+  margin-top:10px;width:100%;transition:opacity 0.2s;
+}
+.suggest-open-btn:hover{opacity:0.88;}
+.suggest-feed-inline{margin-top:12px;max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:7px;}
+.sug-inline-card{
+  background:var(--bg-panel);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:9px 11px;
+  font-size:0.78em;color:var(--text-muted);line-height:1.4;
+}
+
+/* ═══ HEARTBEAT REDESIGN ═══ */
+.hb-chat-header{
+  display:flex;align-items:center;gap:10px;margin-bottom:12px;
+}
+.hb-chat-title{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:1.05em;font-weight:800;color:#ff4d6d;
+  display:flex;align-items:center;gap:7px;
+}
+.hb-chat-desc{
+  font-size:0.85em;color:#ff8fa3;font-weight:600;
+  margin-bottom:12px;
+  line-height:1.5;
+  padding:10px 12px;
+  background:rgba(255,77,109,0.08);
+  border-radius:var(--radius-sm);
+  border-left:3px solid #ff4d6d;
+}
+/* Floating message overlay */
+#hb-float-overlay{
+  position:fixed;inset:0;pointer-events:none;z-index:9000;overflow:hidden;
+}
+.hb-float-msg{
+  position:absolute;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:clamp(1.1em,4vw,1.6em);
+  font-weight:800;
+  color:#ff4d6d;
+  text-shadow:0 0 20px rgba(255,77,109,0.5),0 2px 8px rgba(0,0,0,0.4);
+  max-width:80vw;
+  word-break:break-word;
+  text-align:center;
+  line-height:1.3;
+  animation:hbFloat 60s forwards;
+  pointer-events:none;
+}
+@keyframes hbFloat{
+  0%{opacity:0;transform:scale(0.7);}
+  5%{opacity:1;transform:scale(1);}
+  70%{opacity:1;}
+  100%{opacity:0;transform:scale(1.05);}
+}
+
+/* ═══ LAST UPDATED ═══ */
+.last-updated-bar{
+  display:flex;align-items:center;justify-content:flex-end;gap:5px;
+  font-size:0.62em;color:var(--text-faint);
+  margin-bottom:6px;font-weight:500;
+}
+.last-updated-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:#10b981;animation:pulse 2s infinite;
+}
+
 /* ═══ JS PAINTS CARD COLORS ═══ */
 </style>
 </head>
@@ -807,6 +943,13 @@ if(localStorage.getItem("theme")==="dark") document.body.classList.remove("light
     <div style="flex:1;">🔔 Get meal reminders at 7:30am · 12:30pm · 5pm · 7:30pm
     <div id="notif-st" style="font-size:0.72em;color:#818cf8;margin-top:3px;"></div></div>
     <button class="notif-btn" id="notif-btn" onclick="reqNotif()">Enable</button>
+  </div>
+
+  <!-- NIGHT BANNER -->
+  <div class="night-banner" id="night-banner">
+    <div class="night-banner-emoji">🌙✨</div>
+    <div class="night-banner-text">BASEU Never Sleeps</div>
+    <div class="night-banner-sub">It's late — but you're not alone</div>
   </div>
 
   <!-- CAMPUS UNO TILE — above announcements -->
@@ -851,7 +994,15 @@ if(localStorage.getItem("theme")==="dark") document.body.classList.remove("light
     <div class="s-box"><span class="s-num" id="totalVis">0</span><span class="s-lbl">📊 Visitors</span></div>
   </div>
 
+  <div class="last-updated-bar">
+    <div class="last-updated-dot"></div>
+    <span>Last updated: <span id="last-updated-time">—</span></span>
+  </div>
+
   <div class="sec-lbl">Campus Status</div>
+
+  <div class="night-mask-wrap">
+  <div class="night-overlay" id="night-overlay"><div class="night-overlay-txt">🌙 Tracker sleeps too<br><span style="font-size:0.85em;opacity:0.7;">Check back after 6am</span></div></div>
 
   <div class="grid">
 
@@ -931,20 +1082,21 @@ if(localStorage.getItem("theme")==="dark") document.body.classList.remove("light
       </div>
     </div>
 
-    <!-- SUGGEST — wide bar (spans full row) -->
-    <div class="card bar-card" onclick="openModal('sug')">
-      <div class="bar-left">
-        <span class="bar-icon">💡</span>
-        <div>
-          <div class="bar-title">Suggestions</div>
-          <div class="tc" id="sug-count" style="text-align:left;margin-top:3px;"></div>
-        </div>
-      </div>
-      <div class="bar-right">
-        <span class="sbdg s-purple bar-sbdg">Ideas & Fixes →</span>
+  </div><!-- end grid -->
+  </div><!-- end night-mask-wrap -->
+
+  <!-- SUGGEST OPEN TILE — always visible, always open -->
+  <div class="suggest-open-wrap">
+    <div class="suggest-open-header">
+      <span class="suggest-open-icon">💡</span>
+      <div>
+        <div class="suggest-open-title">Suggestions & Ideas</div>
+        <div class="suggest-open-sub">Help make BASEU better — share anything</div>
       </div>
     </div>
-
+    <textarea class="suggest-open-input" id="sug-open-in" rows="3" placeholder="Ideas, bugs, complaints, requests..."></textarea>
+    <button class="suggest-open-btn" onclick="doSugOpen()">Submit Suggestion</button>
+    <div class="suggest-feed-inline" id="sug-feed-inline"></div>
   </div>
 
   <!-- IMMEDIATE UPDATES -->
@@ -955,24 +1107,24 @@ if(localStorage.getItem("theme")==="dark") document.body.classList.remove("light
 
   <!-- HEARTBEAT ZONE -->
   <div class="hb-wrap">
-    <div class="hb-head">
-      <div class="hb-tit"><div class="pdot"></div>Heartbeat Zone</div>
-      <span style="font-size:0.68em;color:#7f3040;">anonymous · incubation</span>
+    <div class="hb-chat-header">
+      <div class="hb-chat-title"><div class="pdot"></div>💬 Campus Chat</div>
+      <span style="font-size:0.68em;color:#7f3040;margin-left:auto;">anonymous · disappearing</span>
     </div>
-    <div class="hb-rules">
-      <strong>📋 How Heartbeat works:</strong>
-      • Post anonymously — max 80 characters<br>
-      • <strong style="color:#ff758c;">5 upvotes</strong> → graduates to 🔴 Immediate Updates<br>
-      • <strong style="color:#ff758c;">Auto-deletes in 10 min</strong> if under 5 upvotes<br>
-      • Use for urgent signals, crowd alerts, campus sightings
+    <div class="hb-chat-desc">
+      😴 Bored? Chat your heart out here — anonymously.<br>
+      <span style="font-size:0.88em;opacity:0.8;">Messages appear big on screen &amp; vanish in 60 seconds. Say anything.</span>
     </div>
     <div class="hb-row">
-      <input class="hb-in" id="hb-txt" maxlength="80" placeholder="What's happening right now..." oninput="updateCC()">
-      <button class="btn-hb" onclick="postHB()">Post</button>
+      <input class="hb-in" id="hb-txt" maxlength="80" placeholder="What's on your mind right now..." oninput="updateCC()">
+      <button class="btn-hb" onclick="postHB()">Send</button>
     </div>
     <div class="chct" id="chct">0 / 80</div>
-    <div class="hb-feed" id="hb-feed"><div class="hb-empty">No active posts · be the first</div></div>
+    <div class="hb-feed" id="hb-feed"><div class="hb-empty">No messages yet · be the first to chat</div></div>
   </div>
+
+  <!-- FLOATING MESSAGE OVERLAY -->
+  <div id="hb-float-overlay"></div>
 
   <!-- FOOTER -->
   <footer class="site-footer">
@@ -1010,9 +1162,9 @@ if(localStorage.getItem("theme")==="dark") document.body.classList.remove("light
 // ═══════════════════════════════════════════════
 var ILOCK = "fundbaseu2024"; // ← change this
 //Voting thresholds
-var T_MESS=3, T_GYM=3, T_NESCAFE=2, T_NANDINI=2, T_BAD=2, T_DOC=1, T_PROF=2;
+var T_MESS=3, T_GYM=1, T_NESCAFE=2, T_NANDINI=2, T_BAD=2, T_DOC=1, T_PROF=1;
 // Time thresholds (ms)
-var HB_VOTES=5, HB_TTL=600000, IMM_DV=5, ANN_EXP=43200000;
+var HB_VOTES=5, HB_TTL=60000, IMM_DV=5, ANN_EXP=43200000;
 
 // Faculty list — 12 professors
 var FACULTY = [
@@ -1373,8 +1525,9 @@ function getFacDisplay(key){
   if(!isOfficeHours()) return {badge:"🌙 Out of Office", color:"s-gray", auto:true};
   var d=facStatuses[key];
   if(!d) return {badge:"Not Updated", color:"s-gray", auto:false};
-  if(d.status==="In Class") return {badge:"🏫 In Class", color:"s-green", auto:false};
   if(d.status==="In Cabin") return {badge:"🚪 In Cabin", color:"s-teal", auto:false};
+  if(d.status==="Not in Cabin") return {badge:"🚫 Not in Cabin", color:"s-red", auto:false};
+  if(d.status==="In Class") return {badge:"🏫 In Class", color:"s-green", auto:false};
   if(d.status==="Admin")    return {badge:"🏢 Admin", color:"s-amber", auto:false};
   if(d.status==="On Leave") return {badge:"🏖️ On Leave", color:"s-red", auto:false};
   return {badge:d.status, color:"s-blue", auto:false};
@@ -1562,19 +1715,15 @@ function openFacModal(idx){
   if(!isOfficeHours()){ toast("🌙 Faculty locator is active 9am–6pm only"); return; }
   var key="fac_"+idx, name=FACULTY[idx];
   var h='<div class="mh"><span>👤 '+esc(name)+'</span><button class="mx" onclick="closeModal()">✕</button></div>';
-  h+='<p style="color:#888;font-size:0.8em;margin-bottom:10px;">Where is '+esc(name.split(' ')[1]||name)+' right now? (needs '+T_PROF+')</p>';
+  h+='<p style="color:#888;font-size:0.8em;margin-bottom:10px;">Is '+esc(name.split(' ')[1]||name)+' in their cabin?</p>';
   h+='<div class="bst">'+
-    '<button class="mb g" onclick="doVote(\''+key+'\',\'In Class\','+T_PROF+')">🏫 In Class</button>'+
     '<button class="mb t" onclick="doVote(\''+key+'\',\'In Cabin\','+T_PROF+')">🚪 In Cabin</button>'+
-    '<button class="mb a" onclick="doVote(\''+key+'\',\'Admin\','+T_PROF+')">🏢 Admin Block</button>'+
-    '<button class="mb r" onclick="doVote(\''+key+'\',\'On Leave\','+T_PROF+')">🏖️ On Leave</button>'+
+    '<button class="mb r" onclick="doVote(\''+key+'\',\'Not in Cabin\','+T_PROF+')">🚫 Not in Cabin</button>'+
   '</div>';
   if(isAdmin){
     h+='<div class="adm-sec"><div class="adm-lbl">🔐 Admin Override</div><div class="adm-row">'+
-      '<button class="adm-btn" onclick="adminSet(\''+key+'\',\'In Class\')">In Class</button>'+
       '<button class="adm-btn" onclick="adminSet(\''+key+'\',\'In Cabin\')">In Cabin</button>'+
-      '<button class="adm-btn" onclick="adminSet(\''+key+'\',\'Admin\')">Admin</button>'+
-      '<button class="adm-btn" onclick="adminSet(\''+key+'\',\'On Leave\')">On Leave</button>'+
+      '<button class="adm-btn" onclick="adminSet(\''+key+'\',\'Not in Cabin\')">Not in Cabin</button>'+
     '</div></div>';
   }
   h+='<button class="mb x" style="margin-top:14px;" onclick="closeModal()">Close</button>';
@@ -1680,7 +1829,8 @@ function postHB(){
   var t=ge("hb-txt").value.trim();
   if(!t) return alert("Write something"); if(t.length>80) return alert("Max 80 chars");
   db.ref("heartbeat").push({text:t,ts:Date.now(),upvotes:0,graduated:false});
-  logAct("💗 Heartbeat: \""+t.slice(0,28)+(t.length>28?"…":"")+"\"");
+  showFloatingMessage(t);
+  logAct("💬 Chat: \""+t.slice(0,28)+(t.length>28?"…":"")+"\"");
   ge("hb-txt").value=""; ge("chct").textContent="0 / 80";
 }
 function uvHB(id){
@@ -1703,14 +1853,16 @@ db.ref("heartbeat").on("value",function(snap){
   var feed=ge("hb-feed"),now=Date.now(),posts=[];
   snap.forEach(function(c){ var d=c.val(); if(d&&!d.graduated) posts.push({id:c.key,...d}); });
   posts.sort(function(a,b){ return b.ts-a.ts; });
-  if(!posts.length){ feed.innerHTML='<div class="hb-empty">No active posts · be the first</div>'; return; }
+  if(!posts.length){ feed.innerHTML='<div class="hb-empty">No messages yet · be the first to chat</div>'; return; }
   feed.innerHTML=posts.map(function(p){
-    var voted=!!localStorage.getItem("hbv_"+p.id);
-    var rem=Math.max(0,HB_TTL-(now-p.ts)),pct=(rem/HB_TTL)*100,mins=Math.ceil(rem/60000),uv=p.upvotes||0;
-    return '<div class="hb-card"><div style="flex:1;"><div class="hb-txt">'+esc(p.text)+'</div>'+
-      '<div style="font-size:0.62em;color:#7f3040;margin-top:3px;">⏱ '+mins+'m left · '+uv+'/'+HB_VOTES+' upvotes</div>'+
-      '<div class="tbar"><div class="tfil" style="width:'+pct+'%"></div></div></div>'+
-      '<div class="hb-r"><button class="uv-btn'+(voted?' voted':'')+'" onclick="'+(voted?'toast(\'Already upvoted\')':'uvHB(\''+p.id+'\')')+'">👍 '+uv+'</button></div></div>';
+    var rem=Math.max(0,HB_TTL-(now-p.ts)),pct=(rem/HB_TTL)*100,secs=Math.ceil(rem/1000);
+    var opacity=Math.max(0.3,pct/100);
+    return '<div class="hb-card" style="opacity:'+opacity+';border-color:rgba(255,77,109,'+Math.min(0.4,opacity*0.5)+');">'+
+      '<div style="flex:1;">'+
+        '<div class="hb-txt" style="font-size:1em;font-weight:700;color:#ff8fa3;letter-spacing:-0.2px;">'+esc(p.text)+'</div>'+
+        '<div style="font-size:0.6em;color:#7f3040;margin-top:4px;">⏱ fades in '+secs+'s</div>'+
+        '<div class="tbar"><div class="tfil" style="width:'+pct+'%"></div></div>'+
+      '</div></div>';
   }).join('');
 });
 
@@ -1718,6 +1870,106 @@ db.ref("heartbeat").on("value",function(snap){
 //  INIT
 // ═══════════════════════════════════════════════
 initNotif();
+
+// ═══════════════════════════════════════════════
+//  LAST UPDATED TIME
+// ═══════════════════════════════════════════════
+function updateLastUpdated(){
+  var now=new Date();
+  var h=now.getHours().toString().padStart(2,'0');
+  var m=now.getMinutes().toString().padStart(2,'0');
+  var day=now.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+  setText("last-updated-time", day+" · "+h+":"+m);
+}
+updateLastUpdated(); setInterval(updateLastUpdated, 60000);
+
+// ═══════════════════════════════════════════════
+//  NIGHT MODE (10pm–6am)
+// ═══════════════════════════════════════════════
+function isNight(){
+  var h=new Date().getHours();
+  return h>=22 || h<6;
+}
+function applyNightMode(){
+  var night=isNight();
+  var banner=ge("night-banner");
+  var overlay=ge("night-overlay");
+  if(banner) banner.classList.toggle("show", night);
+  if(overlay) overlay.classList.toggle("show", night);
+}
+applyNightMode(); setInterval(applyNightMode, 60000);
+
+// ═══════════════════════════════════════════════
+//  AUTO FOOD NOT AVAILABLE (30min after meal ends)
+// ═══════════════════════════════════════════════
+var mealEndTimes = [
+  {h:9, m:30,  meal:"Breakfast"},
+  {h:14, m:30, meal:"Lunch"},
+  {h:18, m:30, meal:"Snacks"},
+  {h:21, m:30, meal:"Dinner"}
+];
+function checkAutoFoodStatus(){
+  var now=new Date(), h=now.getHours(), m=now.getMinutes();
+  var totalMin=h*60+m;
+  mealEndTimes.forEach(function(me){
+    var endMin=me.h*60+me.m;
+    // Window: from meal end to meal end + 30min
+    if(totalMin>=endMin && totalMin<endMin+30){
+      // Auto-set mess to Not Available if not already set by community
+      db.ref("mess").once("value",function(snap){
+        var d=snap.val();
+        // Only override if current status is "Food Available" or nothing, not if already "Not Available"
+        if(!d||d.status==="Food Available"){
+          db.ref("mess").set({status:"Not Available",ts:Date.now(),autoSet:true});
+          logAct("⏰ Auto: Mess → Not Available after "+me.meal);
+        }
+      });
+    }
+  });
+}
+checkAutoFoodStatus(); setInterval(checkAutoFoodStatus, 60000);
+
+// ═══════════════════════════════════════════════
+//  SUGGEST OPEN TILE
+// ═══════════════════════════════════════════════
+function doSugOpen(){
+  var inp=ge("sug-open-in"); if(!inp) return;
+  var t=inp.value.trim();
+  if(!t) return toast("Write something first!");
+  db.ref("suggestions").push({text:t,ts:Date.now()});
+  logAct("💡 Suggestion submitted");
+  toast("Thanks for the suggestion! 💡");
+  inp.value="";
+  loadSugFeedInline();
+}
+function loadSugFeedInline(){
+  db.ref("suggestions").orderByChild("ts").limitToLast(5).once("value",function(snap){
+    var a=[]; snap.forEach(function(c){ a.push(c.val()); }); a.reverse();
+    var e=ge("sug-feed-inline"); if(!e) return;
+    e.innerHTML=a.length?a.map(function(s){
+      return '<div class="sug-inline-card">'+esc(s.text||'')+'<span style="font-size:0.75em;color:#444;margin-left:6px;">'+ago(s.ts)+'</span></div>';
+    }).join(''):'';
+  });
+}
+loadSugFeedInline(); setInterval(loadSugFeedInline,30000);
+
+// ═══════════════════════════════════════════════
+//  FLOATING CHAT MESSAGES
+// ═══════════════════════════════════════════════
+function showFloatingMessage(text){
+  var overlay=ge("hb-float-overlay"); if(!overlay) return;
+  var el=document.createElement("div");
+  el.className="hb-float-msg";
+  el.textContent=text;
+  // Random position (avoid edges)
+  var x=10+Math.random()*60; // 10–70% from left
+  var y=15+Math.random()*60; // 15–75% from top
+  el.style.left=x+"%";
+  el.style.top=y+"%";
+  el.style.transform="translate(-50%,-50%)";
+  overlay.appendChild(el);
+  setTimeout(function(){ el.remove(); },61000);
+}
 </script>
 
 <script>
@@ -1746,7 +1998,8 @@ initNotif();
       t.includes("closed") ||
       t.includes("not available") ||
       t.includes("full") ||
-      t.includes("on leave")
+      t.includes("on leave") ||
+      t.includes("not in cabin")
     ) return "red";
 
     // AMBER CONDITIONS
