@@ -945,6 +945,102 @@ body.light-theme .night-overlay-txt{color:#9980c0;}
   background:#10b981;animation:pulse 2s infinite;
 }
 
+/* ═══ FACULTY HUNT ═══ */
+.fhunt-wrap{
+  margin:14px 0;
+  border:1px solid rgba(139,92,246,0.3);
+  border-radius:var(--radius-lg);
+  background:var(--bg-card);
+  box-shadow:var(--shadow-card);
+  overflow:hidden;
+  position:relative;
+}
+.fhunt-wrap::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,#8b5cf6,#6366f1,#3b82f6);
+}
+.fhunt-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px 10px;flex-wrap:wrap;gap:8px;
+}
+.fhunt-title{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:0.95em;font-weight:800;color:var(--text-main);
+  display:flex;align-items:center;gap:8px;
+}
+.fhunt-sub{font-size:0.65em;color:var(--text-muted);font-weight:400;margin-top:1px;}
+.fhunt-post-btn{
+  background:linear-gradient(135deg,#7c3aed,#6366f1);
+  color:white;border:none;border-radius:10px;
+  padding:8px 16px;font-size:0.78em;font-weight:700;
+  cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+  transition:opacity 0.2s;white-space:nowrap;
+}
+.fhunt-post-btn:hover{opacity:0.88;}
+.fhunt-list{padding:0 12px 12px;display:flex;flex-direction:column;gap:10px;}
+.fhunt-empty{
+  text-align:center;color:var(--text-faint);font-size:0.8em;
+  padding:18px;border:1px dashed var(--border-main);
+  border-radius:var(--radius-sm);margin:0 0 4px;
+}
+.fhunt-card{
+  background:var(--bg-panel);
+  border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);
+  padding:12px 14px;
+  position:relative;overflow:hidden;
+  animation:fu .3s ease;
+}
+.fhunt-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,#8b5cf6,#6366f1);
+  border-radius:3px 0 0 3px;
+}
+.fhunt-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.fhunt-who{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:0.9em;font-weight:800;color:var(--text-main);
+}
+.fhunt-note{font-size:0.78em;color:var(--text-muted);font-style:italic;margin-top:2px;line-height:1.35;}
+.fhunt-meta{font-size:0.62em;color:var(--text-faint);margin-top:1px;}
+.fhunt-timer{
+  font-size:0.6em;font-weight:700;color:#8b5cf6;
+  background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);
+  padding:2px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;
+}
+.fhunt-responses{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 6px;}
+.fhunt-resp-chip{
+  font-size:0.72em;font-weight:600;padding:4px 10px;border-radius:20px;
+  background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:#a5b4fc;
+}
+.fhunt-resp-chip.spotted{background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.25);color:#34d399;}
+.fhunt-resp-chip.cabin{background:rgba(20,184,166,0.12);border-color:rgba(20,184,166,0.25);color:#5eead4;}
+.fhunt-resp-chip.inclass{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.25);color:#93c5fd;}
+.fhunt-resp-chip.notseen{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);color:#f87171;}
+.fhunt-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.fhunt-act-btn{
+  font-size:0.74em;font-weight:700;padding:5px 11px;border-radius:8px;
+  border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+  transition:opacity 0.15s;flex:1;min-width:70px;text-align:center;
+}
+.fhunt-act-btn:active{opacity:0.75;}
+.fha-spotted{background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3);}
+.fha-cabin{background:rgba(20,184,166,0.15);color:#5eead4;border:1px solid rgba(20,184,166,0.3);}
+.fha-class{background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);}
+.fha-notseen{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);}
+.fhunt-spotted-wrap{margin-top:8px;padding:8px 10px;background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);border-radius:8px;}
+.fhunt-spotted-input{
+  width:100%;background:transparent;border:none;border-bottom:1px solid rgba(16,185,129,0.3);
+  padding:4px 0;color:var(--text-main);font-size:0.82em;
+  font-family:'Inter',sans-serif;outline:none;
+}
+.fhunt-spotted-input::placeholder{color:var(--text-faint);}
+.fhunt-spotted-send{
+  margin-top:6px;background:#10b981;color:white;border:none;
+  border-radius:8px;padding:6px 14px;font-size:0.76em;font-weight:700;
+  cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+}
+
 /* ═══ JS PAINTS CARD COLORS ═══ */
 </style>
 </head>
@@ -1098,22 +1194,36 @@ if(localStorage.getItem("theme")==="dark") document.body.classList.remove("light
       <div class="tc" id="doc-ts"></div>
     </div>
 
-    <!-- FACULTY — wide bar (spans full row) -->
-    <div class="card bar-card" onclick="openFacultyLocator()">
+    <!-- FACULTY HUNT — wide bar -->
+    <div class="card bar-card" onclick="openFacultyHuntPost()">
       <div class="bar-left">
-        <span class="bar-icon">🎓</span>
+        <span class="bar-icon">🎯</span>
         <div>
-          <div class="bar-title">Faculty Locator</div>
-          <div class="tc" id="fac-summary" style="text-align:left;margin-top:3px;"></div>
+          <div class="bar-title">Admin · Faculty Hunt</div>
+          <div class="tc" id="fac-summary" style="text-align:left;margin-top:3px;">looking for someone? post a hunt</div>
         </div>
       </div>
       <div class="bar-right">
-        <span class="sbdg s-purple bar-sbdg">Tap to locate →</span>
+        <span class="sbdg s-purple bar-sbdg">Post Hunt →</span>
       </div>
     </div>
 
   </div><!-- end grid -->
   </div><!-- end night-mask-wrap -->
+
+  <!-- FACULTY HUNT LIVE FEED -->
+  <div class="fhunt-wrap" id="fhunt-wrap">
+    <div class="fhunt-header">
+      <div>
+        <div class="fhunt-title">🎯 Admin · Faculty Hunt</div>
+        <div class="fhunt-sub">Live hunting board · requests auto-delete in 15 min</div>
+      </div>
+      <button class="fhunt-post-btn" onclick="openFacultyHuntPost()">+ New Hunt</button>
+    </div>
+    <div class="fhunt-list" id="fhunt-list">
+      <div class="fhunt-empty">No active hunts right now · tap "New Hunt" to start one</div>
+    </div>
+  </div>
 
   <!-- SUGGEST OPEN TILE — always visible, always open -->
   <div class="suggest-open-wrap">
@@ -1147,6 +1257,8 @@ if(localStorage.getItem("theme")==="dark") document.body.classList.remove("light
       😴 Bored? Chat your heart out here — anonymously.<br>
       <span style="font-size:0.88em;opacity:0.8;">Messages disappear in 10 seconds. Say anything.</span>
     </div>
+    <!-- Missed messages notice -->
+    <div id="hb-missed-bar" style="display:none;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.2);border-radius:8px;padding:7px 12px;margin-bottom:8px;font-size:0.74em;color:#ff8fa3;font-weight:600;text-align:center;"></div>
     <!-- Active chatters strip -->
     <div class="hb-typing-strip" id="hb-typing-strip">
       <div class="hb-typing-dots"><span></span><span></span><span></span></div>
@@ -1544,102 +1656,134 @@ listenPlace("doc",T_DOC,function(d){
 db.ref("suggestions").on("value",function(snap){ setText("sug-count",(snap.numChildren()||0)+" suggestion(s)"); });
 
 // ═══════════════════════════════════════════════
-//  FACULTY LOCATOR (single tile → modal with all faculty)
+//  ADMIN · FACULTY HUNT
 // ═══════════════════════════════════════════════
-var facConf = {};
-var facStatuses = {}; // cache latest status per key
+var FHUNT_TTL = 900000; // 15 minutes
 
-function isOfficeHours(){
-  var h=new Date().getHours();
-  return h>=9 && h<18; // 9am–6pm = office hours; outside = auto Out of Office
-}
-
-function getFacDisplay(key){
-  // If outside office hours, auto show Out of Office regardless of DB status
-  if(!isOfficeHours()) return {badge:"🌙 Out of Office", color:"s-gray", auto:true};
-  var d=facStatuses[key];
-  if(!d) return {badge:"Not Updated", color:"s-gray", auto:false};
-  if(d.status==="In Cabin") return {badge:"🚪 In Cabin", color:"s-teal", auto:false};
-  if(d.status==="Not in Cabin") return {badge:"🚫 Not in Cabin", color:"s-red", auto:false};
-  if(d.status==="In Class") return {badge:"🏫 In Class", color:"s-green", auto:false};
-  if(d.status==="Admin")    return {badge:"🏢 Admin", color:"s-amber", auto:false};
-  if(d.status==="On Leave") return {badge:"🏖️ On Leave", color:"s-red", auto:false};
-  return {badge:d.status, color:"s-blue", auto:false};
-}
-
-function initFacultyListeners(){
-  FACULTY.forEach(function(name,i){
-    var key = "fac_"+i;
-    listenFaculty(key, T_PROF);
-  });
-  // Re-check display every minute in case time crosses 6pm or 9am boundary
-  setInterval(updateFacSummary, 60000);
-}
-
-function updateFacSummary(){
-  if(!isOfficeHours()){
-    setText("fac-summary","🌙 Out of Office");
-    return;
-  }
-  var updated=0, total=FACULTY.length;
-  FACULTY.forEach(function(_,i){ if(facStatuses["fac_"+i]) updated++; });
-  setText("fac-summary", updated+"/"+total+" updated");
-}
-
-function openFacultyLocator(){
-  var officeHours=isOfficeHours();
-  var rows = FACULTY.map(function(name,i){
-    var key="fac_"+i;
-    var disp=getFacDisplay(key);
-    var short=name.replace(/^(Dr\.|Prof\.)\s/,"");
-    var d=facStatuses[key];
-    var ts_txt=(!disp.auto&&d)?ago(d.ts):"";
-    var clickable=officeHours?"onclick=\"openFacModal("+i+")\"":"";
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #1e1e35;'+(officeHours?'cursor:pointer;':'')+'" '+clickable+'>'+
-      '<span style="font-size:0.88em;color:#e2e8f0;font-weight:600;">👤 '+esc(short)+'</span>'+
-      '<span style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">'+
-        '<span class="sbdg '+disp.color+'" style="padding:3px 8px;font-size:0.72em;">'+disp.badge+'</span>'+
-        (ts_txt?'<span style="font-size:0.6em;color:#444;">'+ts_txt+'</span>':'')+
-      '</span></div>';
+function openFacultyHuntPost(){
+  var facOptions = FACULTY.map(function(name,i){
+    return '<option value="'+i+'">'+esc(name)+'</option>';
   }).join('');
-
-  var officeNote=officeHours?'<p style="color:#888;font-size:0.78em;margin-bottom:10px;">Tap any faculty to update their location</p>':
-    '<p style="color:#f59e0b;font-size:0.78em;margin-bottom:10px;">🌙 Outside office hours (9am–6pm) — all faculty shown as Out of Office</p>';
-
-  var h='<div class="mh"><span>🎓 Faculty Locator</span><button class="mx" onclick="closeModal()">✕</button></div>';
-  h+=officeNote;
-  h+='<div style="max-height:65vh;overflow-y:auto;">'+rows+'</div>';
-  h+='<button class="mb x" style="margin-top:14px;" onclick="closeModal()">Close</button>';
+  var h='<div class="mh"><span>🎯 Post a Faculty Hunt</span><button class="mx" onclick="closeModal()">✕</button></div>';
+  h+='<p style="color:var(--text-muted);font-size:0.82em;margin-bottom:14px;">Looking for a professor? Post it — anyone online can help spot them.</p>';
+  h+='<select class="msel" id="fh-prof-sel" style="margin-top:0;">'+facOptions+'</select>';
+  h+='<input class="mi" id="fh-note" maxlength="50" placeholder="Optional note · max 50 chars (e.g. Need signature)" style="margin-top:10px;">';
+  h+='<div style="font-size:0.62em;color:var(--text-faint);text-align:right;margin-top:3px;" id="fh-note-ct">0/50</div>';
+  h+='<div class="bst" style="margin-top:10px;">'+
+    '<button class="mb g" onclick="postFacHunt()">🎯 Post Hunt</button>'+
+    '<button class="mb x" onclick="closeModal()">Cancel</button>'+
+  '</div>';
   ge("mbox").innerHTML=h;
   ge("modal").classList.add("active");
+  var noteEl=ge("fh-note");
+  if(noteEl) noteEl.addEventListener("input",function(){ var ct=ge("fh-note-ct"); if(ct) ct.textContent=this.value.length+"/50"; });
 }
 
-function listenFaculty(key, thresh){
-  db.ref(key).on("value",function(snap){
-    var d=snap.val();
-    if(!d||!d.status){
-      facConf[key]=false;
-      facStatuses[key]=null;
-      // Clear stale device vote lock so user can vote in a new round
-      db.ref(key+"_dv/"+devId).once("value",function(dvSnap){
-        if(dvSnap.exists()) db.ref(key+"_dv/"+devId).remove();
-      });
-      setCB(key,0,false,thresh);
-    } else {
-      facConf[key]=true;
-      facStatuses[key]=d;
-      setCB(key,0,true,thresh);
-    }
-    updateFacSummary();
+function postFacHunt(){
+  var sel=ge("fh-prof-sel"); if(!sel) return;
+  var idx=parseInt(sel.value), name=FACULTY[idx];
+  var note=(ge("fh-note")||{}).value||""; note=note.trim();
+  db.ref("facHunts").push({
+    profIdx:idx, profName:name,
+    note:note||"", ts:Date.now(),
+    responses:{},
+    posterId:devId
   });
-  db.ref(key+"_voteCount").on("value",function(snap){
-    var c=snap.val()||0;
-    if(!facConf[key]) setCB(key,c,false,thresh);
-  });
+  logAct("🎯 Hunt posted: "+name);
+  toast("🎯 Hunt posted! Others can now help spot them.");
+  closeModal();
 }
 
-initFacultyListeners();
-updateFacSummary();
+function respondToHunt(huntId, type, profName){
+  if(type==="spotted"){
+    // Show inline spotted input
+    var wrap=ge("fh-spot-"+huntId);
+    if(wrap){ wrap.style.display="block"; return; }
+  }
+  submitHuntResponse(huntId, type, profName, "");
+}
+
+function submitHuntResponse(huntId, type, profName, location){
+  var payload={type:type, ts:Date.now(), devId:devId};
+  if(location) payload.location=location;
+  db.ref("facHunts/"+huntId+"/responses/"+devId).set(payload);
+  var labels={spotted:"👀 Spotted!", cabin:"📍 In Cabin", inclass:"🏫 In Class", notseen:"❌ Not Seen"};
+  toast(labels[type]||"Response sent!");
+  // Hide input if shown
+  var wrap=ge("fh-spot-"+huntId); if(wrap) wrap.style.display="none";
+  logAct("🎯 Hunt response: "+profName+" → "+type+(location?" @ "+location:""));
+}
+
+function sendSpottedNote(huntId, profName){
+  var inp=ge("fh-loc-"+huntId); if(!inp) return;
+  var loc=inp.value.trim();
+  submitHuntResponse(huntId, "spotted", profName, loc);
+}
+
+function renderFacHunts(hunts){
+  var list=ge("fhunt-list"); if(!list) return;
+  if(!hunts.length){ list.innerHTML='<div class="fhunt-empty">No active hunts right now · tap "New Hunt" to start one</div>'; return; }
+  var now=Date.now();
+  list.innerHTML=hunts.map(function(h){
+    var rem=Math.max(0,FHUNT_TTL-(now-h.ts));
+    var mins=Math.ceil(rem/60000);
+    var resps=h.responses?Object.values(h.responses):[];
+    // Tally
+    var spotted=resps.filter(function(r){return r.type==="spotted";});
+    var cabin=resps.filter(function(r){return r.type==="cabin";});
+    var inclass=resps.filter(function(r){return r.type==="inclass";});
+    var notseen=resps.filter(function(r){return r.type==="notseen";});
+    // Latest spotted location
+    var latestSpot=spotted.length?spotted.sort(function(a,b){return b.ts-a.ts;})[0]:null;
+    var alreadyVoted=h.responses&&h.responses[devId];
+    var chips='';
+    if(spotted.length) chips+='<span class="fhunt-resp-chip spotted">👀 Spotted ×'+spotted.length+(latestSpot&&latestSpot.location?' · '+esc(latestSpot.location):'')+'</span>';
+    if(cabin.length) chips+='<span class="fhunt-resp-chip cabin">📍 In Cabin ×'+cabin.length+'</span>';
+    if(inclass.length) chips+='<span class="fhunt-resp-chip inclass">🏫 In Class ×'+inclass.length+'</span>';
+    if(notseen.length) chips+='<span class="fhunt-resp-chip notseen">❌ Not Seen ×'+notseen.length+'</span>';
+    var actions=alreadyVoted?
+      '<div style="font-size:0.72em;color:var(--text-faint);margin-top:6px;text-align:center;">✅ You responded to this hunt</div>' :
+      '<div class="fhunt-actions">'+
+        '<button class="fhunt-act-btn fha-spotted" onclick="respondToHunt(\''+h.id+'\',\'spotted\',\''+esc(h.profName)+'\')">👀 Spotted</button>'+
+        '<button class="fhunt-act-btn fha-cabin" onclick="submitHuntResponse(\''+h.id+'\',\'cabin\',\''+esc(h.profName)+'\',\'\')">📍 In Cabin</button>'+
+        '<button class="fhunt-act-btn fha-class" onclick="submitHuntResponse(\''+h.id+'\',\'inclass\',\''+esc(h.profName)+'\',\'\')">🏫 In Class</button>'+
+        '<button class="fhunt-act-btn fha-notseen" onclick="submitHuntResponse(\''+h.id+'\',\'notseen\',\''+esc(h.profName)+'\',\'\')">❌ Not Seen</button>'+
+      '</div>'+
+      '<div class="fhunt-spotted-wrap" id="fh-spot-'+h.id+'" style="display:none;">'+
+        '<div style="font-size:0.72em;color:#34d399;font-weight:700;margin-bottom:4px;">👀 Where exactly?</div>'+
+        '<input class="fhunt-spotted-input" id="fh-loc-'+h.id+'" maxlength="60" placeholder="e.g. Library ground floor, near elevator...">'+
+        '<button class="fhunt-spotted-send" onclick="sendSpottedNote(\''+h.id+'\',\''+esc(h.profName)+'\')">Send Location</button>'+
+      '</div>';
+    return '<div class="fhunt-card">'+
+      '<div class="fhunt-card-top">'+
+        '<div>'+
+          '<div class="fhunt-who">🎯 Looking for '+esc(h.profName)+'</div>'+
+          (h.note?'<div class="fhunt-note">"'+esc(h.note)+'"</div>':'')+
+          '<div class="fhunt-meta">Posted '+ago(h.ts)+'</div>'+
+        '</div>'+
+        '<div class="fhunt-timer">⏱ '+mins+'m left</div>'+
+      '</div>'+
+      (chips?'<div class="fhunt-responses">'+chips+'</div>':'')+
+      actions+
+    '</div>';
+  }).join('');
+}
+
+// Live listener for faculty hunts
+function cleanFacHunts(){ db.ref("facHunts").once("value",function(snap){ var now=Date.now(); snap.forEach(function(c){ var d=c.val(); if(d&&(now-d.ts)>FHUNT_TTL) db.ref("facHunts/"+c.key).remove(); }); }); }
+cleanFacHunts(); setInterval(cleanFacHunts,60000);
+
+db.ref("facHunts").orderByChild("ts").on("value",function(snap){
+  var hunts=[], now=Date.now();
+  snap.forEach(function(c){ var d=c.val(); if(d&&(now-d.ts)<FHUNT_TTL) hunts.push({id:c.key,...d}); });
+  hunts.reverse();
+  // Update tile summary
+  setText("fac-summary", hunts.length?hunts.length+" active hunt"+(hunts.length!==1?"s":""):"looking for someone? post a hunt");
+  renderFacHunts(hunts);
+});
+
+// Keep auto-reset for 15 min stale data (already handled by cleanFacHunts)
+// Old initFacultyListeners no longer needed — replaced by hunt system
 
 // ═══════════════════════════════════════════════
 //  MODAL
@@ -1737,26 +1881,6 @@ function openModal(place){
   ge("modal").classList.add("active");
 }
 
-function openFacModal(idx){
-  if(!isOfficeHours()){ toast("🌙 Faculty locator is active 9am–6pm only"); return; }
-  var key="fac_"+idx, name=FACULTY[idx];
-  var h='<div class="mh"><span>👤 '+esc(name)+'</span><button class="mx" onclick="closeModal()">✕</button></div>';
-  h+='<p style="color:#888;font-size:0.8em;margin-bottom:10px;">Is '+esc(name.split(' ')[1]||name)+' in their cabin?</p>';
-  h+='<div class="bst">'+
-    '<button class="mb t" onclick="doVote(\''+key+'\',\'In Cabin\','+T_PROF+')">🚪 In Cabin</button>'+
-    '<button class="mb r" onclick="doVote(\''+key+'\',\'Not in Cabin\','+T_PROF+')">🚫 Not in Cabin</button>'+
-  '</div>';
-  if(isAdmin){
-    h+='<div class="adm-sec"><div class="adm-lbl">🔐 Admin Override</div><div class="adm-row">'+
-      '<button class="adm-btn" onclick="adminSet(\''+key+'\',\'In Cabin\')">In Cabin</button>'+
-      '<button class="adm-btn" onclick="adminSet(\''+key+'\',\'Not in Cabin\')">Not in Cabin</button>'+
-    '</div></div>';
-  }
-  h+='<button class="mb x" style="margin-top:14px;" onclick="closeModal()">Close</button>';
-  ge("mbox").innerHTML=h;
-  ge("modal").classList.add("active");
-}
-
 function closeModal(){ ge("modal").classList.remove("active"); }
 function bgClose(e){ if(e.target===ge("modal")) closeModal(); }
 
@@ -1848,16 +1972,38 @@ function dvImm(id){
 function admDel(id){ if(!checkAdmin()) return; db.ref("immediateUpdates/"+id).remove(); toast("Deleted"); }
 
 // ═══════════════════════════════════════════════
-//  HEARTBEAT
+//  HEARTBEAT / CAMPUS CHAT
 // ═══════════════════════════════════════════════
+
+// Track total messages sent today for "missed" counter
+var HB_TODAY_KEY = "hb_today_"+new Date().toDateString();
+var hbTodayCount = parseInt(localStorage.getItem(HB_TODAY_KEY)||"0");
+
+function updateMissedBar(){
+  var bar=ge("hb-missed-bar"); if(!bar) return;
+  if(hbTodayCount>0){
+    bar.style.display="block";
+    bar.textContent="💬 "+hbTodayCount+" text"+(hbTodayCount!==1?"s":"")+' sent today — be on the site more often to catch some of the chats!';
+  } else {
+    bar.style.display="none";
+  }
+}
 function updateCC(){ var v=ge("hb-txt").value,c=ge("chct"); c.textContent=v.length+" / 80"; c.className="chct"+(v.length>70?" warn":""); }
 function postHB(){
   var t=ge("hb-txt").value.trim();
   if(!t) return alert("Write something"); if(t.length>80) return alert("Max 80 chars");
   db.ref("heartbeat").push({text:t,ts:Date.now(),upvotes:0,graduated:false});
+  // Track today count globally
+  db.ref("hbDailyCount/"+new Date().toDateString()).transaction(function(c){ return (c||0)+1; });
   logAct("💬 Chat: \""+t.slice(0,28)+(t.length>28?"…":"")+"\"");
   ge("hb-txt").value=""; ge("chct").textContent="0 / 80";
 }
+
+// Load today's total chat count
+db.ref("hbDailyCount/"+new Date().toDateString()).on("value",function(snap){
+  hbTodayCount=snap.val()||0;
+  updateMissedBar();
+});
 function uvHB(id){
   var k="hbv_"+id; if(localStorage.getItem(k)) return toast("Already upvoted");
   localStorage.setItem(k,"1");
@@ -2032,28 +2178,7 @@ function applyGreeting(){
 }
 applyGreeting(); setInterval(applyGreeting,60000);
 
-// ═══════════════════════════════════════════════
-//  FACULTY AUTO-RESET every 15 minutes
-// ═══════════════════════════════════════════════
-function autoResetFaculty(){
-  // Clear all faculty statuses every 15 minutes so data stays fresh
-  FACULTY.forEach(function(_,i){
-    var key="fac_"+i;
-    db.ref(key).once("value",function(snap){
-      var d=snap.val();
-      // Only auto-reset if the status is older than 15 minutes
-      if(d && d.ts && (Date.now()-d.ts)>900000){
-        db.ref(key).remove();
-        db.ref(key+"_voteCount").remove();
-        db.ref(key+"_votedFor").remove();
-        db.ref(key+"_dv").remove();
-        db.ref(key+"_pend").remove();
-        logAct("🔄 Auto-reset faculty: "+FACULTY[i]);
-      }
-    });
-  });
-}
-autoResetFaculty(); setInterval(autoResetFaculty,900000); // every 15 min
+// Faculty hunt cleanup handled by cleanFacHunts above
 </script>
 
 <script>
