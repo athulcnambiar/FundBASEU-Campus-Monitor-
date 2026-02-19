@@ -1261,6 +1261,7 @@ if(localStorage.getItem("theme")==="dark") document.body.classList.remove("light
       </div>
       <button class="fhunt-post-btn" onclick="openFacultyHuntPost()">🎯 Start a Hunt</button>
     </div>
+    <div id="hunt-helped-bar" style="display:none;padding:0 12px 8px;"></div>
     <div class="fhunt-list" id="fhunt-list">
       <div class="fhunt-empty">No active hunts · tap "Start a Hunt" to begin</div>
     </div>
@@ -1786,14 +1787,18 @@ function respondToHunt(huntId, type, profName){
 }
 
 function submitHuntResponse(huntId, type, profName, location){
+  var labels={spotted:"👀 Spotted — marked as found!", cabin:"📍 In Cabin — marked!", inclass:"🏫 In Class — marked!", notseen:"❌ Not Seen — marked!"};
   var payload={type:type, ts:Date.now(), devId:devId};
   if(location) payload.location=location;
-  db.ref("facHunts/"+huntId+"/responses/"+devId).set(payload);
-  var labels={spotted:"👀 Spotted!", cabin:"📍 In Cabin", inclass:"🏫 In Class", notseen:"❌ Not Seen"};
+  db.ref("facHunts/"+huntId+"/responses/"+devId).set(payload, function(){
+    // Mark hunt as resolved (don't delete — keep visible for 15 min)
+    db.ref("facHunts/"+huntId).update({resolved:true, resolvedType:type, resolvedLocation:location||""});
+    // Increment global helped-locate counter
+    db.ref("huntHelpCount").transaction(function(c){ return (c||0)+1; });
+  });
   toast(labels[type]||"Response sent!");
-  // Hide input if shown
   var wrap=ge("fh-spot-"+huntId); if(wrap) wrap.style.display="none";
-  logAct("🎯 Hunt response: "+profName+" → "+type+(location?" @ "+location:""));
+  logAct("🎯 Hunt resolved: "+profName+" → "+type+(location?" @ "+location:""));
 }
 
 function sendSpottedNote(huntId, profName){
@@ -1807,18 +1812,21 @@ function renderFacHunts(hunts){
   var wrap=ge("fhunt-wrap");
   var alertBar=ge("hunt-alert-bar");
 
-  // Toggle active glow on the card
-  if(wrap) wrap.classList.toggle("hunt-active", hunts.length>0);
+  var activeHunts=hunts.filter(function(h){ return !h.resolved; });
+  var resolvedHunts=hunts.filter(function(h){ return h.resolved; });
 
-  // Hunt alert bar at top
+  // Glow only if there are UNresolved hunts
+  if(wrap) wrap.classList.toggle("hunt-active", activeHunts.length>0);
+
+  // Alert bar only for active (unresolved) hunts
   if(alertBar){
-    if(hunts.length>0){
+    if(activeHunts.length>0){
       alertBar.style.display="block";
-      var names=hunts.map(function(h){ return h.profName.split(" ")[0]; }).join(", ");
+      var names=activeHunts.map(function(h){ return h.profName.split(" ")[0]; }).join(", ");
       alertBar.innerHTML='<div class="hunt-alert-inner">'+
         '<div class="hunt-alert-dot"></div>'+
-        '<div class="hunt-alert-text">🎯 HUNT IS ON — '+esc(names)+' '+( hunts.length===1?'is being':'are being')+' looked for on campus</div>'+
-        '<div class="hunt-alert-count">'+hunts.length+' active</div>'+
+        '<div class="hunt-alert-text">🎯 HUNT IS ON — '+esc(names)+' '+(activeHunts.length===1?'is being':'are being')+' looked for on campus</div>'+
+        '<div class="hunt-alert-count">'+activeHunts.length+' active</div>'+
       '</div>';
     } else {
       alertBar.style.display="none";
@@ -1826,6 +1834,7 @@ function renderFacHunts(hunts){
   }
 
   if(!hunts.length){ list.innerHTML='<div class="fhunt-empty">No active hunts · tap "Start a Hunt" to begin</div>'; return; }
+
   var now=Date.now();
   list.innerHTML=hunts.map(function(h){
     var rem=Math.max(0,FHUNT_TTL-(now-h.ts));
@@ -1836,12 +1845,33 @@ function renderFacHunts(hunts){
     var inclass=resps.filter(function(r){return r.type==="inclass";});
     var notseen=resps.filter(function(r){return r.type==="notseen";});
     var latestSpot=spotted.length?spotted.sort(function(a,b){return b.ts-a.ts;})[0]:null;
-    var alreadyVoted=h.responses&&h.responses[devId];
+
     var chips='';
     if(spotted.length) chips+='<span class="fhunt-resp-chip spotted">👀 Spotted ×'+spotted.length+(latestSpot&&latestSpot.location?' · '+esc(latestSpot.location):'')+'</span>';
     if(cabin.length) chips+='<span class="fhunt-resp-chip cabin">📍 In Cabin ×'+cabin.length+'</span>';
     if(inclass.length) chips+='<span class="fhunt-resp-chip inclass">🏫 In Class ×'+inclass.length+'</span>';
     if(notseen.length) chips+='<span class="fhunt-resp-chip notseen">❌ Not Seen ×'+notseen.length+'</span>';
+
+    // Resolved card — show result, no action buttons
+    if(h.resolved){
+      var rtypeLabel={spotted:"👀 Spotted",cabin:"📍 Found in Cabin",inclass:"🏫 Found in Class",notseen:"❌ Not on Campus"}[h.resolvedType]||"✅ Located";
+      var rloc=h.resolvedLocation?' · <span style="color:#34d399;">'+esc(h.resolvedLocation)+'</span>':'';
+      return '<div class="fhunt-card" style="opacity:0.75;border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.04);">'+
+        '<div class="fhunt-card-top">'+
+          '<div>'+
+            '<div class="fhunt-who" style="color:#34d399;">✅ Found — '+esc(h.profName)+'</div>'+
+            (h.note?'<div class="fhunt-note">"'+esc(h.note)+'"</div>':'')+
+            '<div class="fhunt-meta">Posted '+ago(h.ts)+'</div>'+
+          '</div>'+
+          '<div class="fhunt-timer" style="color:#34d399;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);">🗑 '+mins+'m</div>'+
+        '</div>'+
+        '<div class="fhunt-responses"><span class="fhunt-resp-chip spotted">'+rtypeLabel+rloc+'</span></div>'+
+        '<div style="font-size:0.68em;color:var(--text-faint);margin-top:6px;text-align:center;">Hunt resolved · auto-removes in '+mins+'m</div>'+
+      '</div>';
+    }
+
+    // Active card — show action buttons
+    var alreadyVoted=h.responses&&h.responses[devId];
     var actions=alreadyVoted?
       '<div style="font-size:0.72em;color:var(--text-faint);margin-top:6px;text-align:center;">✅ You responded to this hunt</div>' :
       '<div class="fhunt-actions">'+
@@ -1855,6 +1885,7 @@ function renderFacHunts(hunts){
         '<input class="fhunt-spotted-input" id="fh-loc-'+h.id+'" maxlength="60" placeholder="e.g. Library ground floor, near elevator...">'+
         '<button class="fhunt-spotted-send" onclick="sendSpottedNote(\''+h.id+'\',\''+esc(h.profName)+'\')">Send Location</button>'+
       '</div>';
+
     return '<div class="fhunt-card">'+
       '<div class="fhunt-card-top">'+
         '<div>'+
@@ -1869,6 +1900,21 @@ function renderFacHunts(hunts){
     '</div>';
   }).join('');
 }
+
+// Helped locate counter
+db.ref("huntHelpCount").on("value",function(snap){
+  var count=snap.val()||0;
+  var bar=ge("hunt-helped-bar"); if(!bar) return;
+  if(count>0){
+    bar.style.display="block";
+    bar.innerHTML='<div style="font-size:0.72em;color:#a78bfa;font-weight:600;display:flex;align-items:center;gap:6px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.18);border-radius:8px;padding:6px 10px;">'+
+      '<span style="font-size:1.1em;">🤝</span>'+
+      '<span>Campus has helped locate <strong style="color:#c4b5fd;">'+count+'</strong> '+(count===1?'faculty / admin staff':'faculty & admin staff')+' so far</span>'+
+    '</div>';
+  } else {
+    bar.style.display="none";
+  }
+});
 
 // Live listener for faculty hunts
 function cleanFacHunts(){ db.ref("facHunts").once("value",function(snap){ var now=Date.now(); snap.forEach(function(c){ var d=c.val(); if(d&&(now-d.ts)>FHUNT_TTL) db.ref("facHunts/"+c.key).remove(); }); }); }
