@@ -553,6 +553,44 @@ body.light .cu-tile { background: linear-gradient(135deg,#4f46e5,#2563eb,#0369a1
   .wknd-card { flex-direction: column; align-items: flex-start; }
   .wt-num { font-size: 1em; }
 }
+
+/* ── SUGGESTIONS ── */
+.sug-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 4px;
+}
+.sug-stripe { height: 3px; background: linear-gradient(90deg,#10b981,#3b82f6,#8b5cf6); }
+.sug-inner { padding: 16px 18px 18px; }
+.sug-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.sug-icon { font-size: 1.6em; }
+.sug-title { font-size: .95em; font-weight: 800; color: var(--text); }
+.sug-sub { font-size: .7em; color: var(--muted); margin-top: 2px; }
+.sug-input {
+  width: 100%; background: var(--bg-panel);
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  padding: 11px 13px; color: var(--text);
+  font-size: .85em; font-family: inherit;
+  outline: none; resize: none; box-sizing: border-box;
+  transition: border-color .2s;
+  line-height: 1.5;
+}
+.sug-input:focus { border-color: var(--violet); }
+.sug-input::placeholder { color: var(--faint); }
+.sug-btn {
+  background: linear-gradient(135deg,#10b981,#3b82f6);
+  border: none; border-radius: 20px;
+  padding: 8px 16px; color: #fff;
+  font-size: .78em; font-weight: 700;
+  font-family: inherit; cursor: pointer;
+  transition: opacity .2s;
+}
+.sug-btn:hover { opacity: .85; }
+
+/* ── LF CSS REMOVED ── */
 </style>
 </head>
 <body>
@@ -579,7 +617,7 @@ body.light .cu-tile { background: linear-gradient(135deg,#4f46e5,#2563eb,#0369a1
   <div class="stat-chip"><span class="stat-n" id="totalVis">0</span><span class="stat-l">📊 Visitors</span></div>
 </div>
 
-<!-- WEEKEND COUNTDOWN -->
+<!-- SEMESTER COUNTDOWN -->
 <div id="wknd-banner"></div>
 
 <!-- MAIN WRAP -->
@@ -717,29 +755,31 @@ body.light .cu-tile { background: linear-gradient(135deg,#4f46e5,#2563eb,#0369a1
   </div>
   <div class="class-signal-grid" id="class-grid"></div>
 
-  <!-- LOST & FOUND -->
-  <div class="sec-head"><div class="sec-title">🔎 Lost & Found</div></div>
-  <div class="lf-card">
-    <div class="lf-stripe"></div>
-    <div class="lf-inner">
-      <div class="lf-header">
-        <span class="lf-icon">🔎</span>
+  <!-- SEMESTER TICKER -->
+  <div id="sem-ticker"></div>
+
+  <!-- SUGGESTIONS -->
+  <div class="sec-head">
+    <div class="sec-title">💡 Suggestions</div>
+  </div>
+  <div class="sug-card">
+    <div class="sug-stripe"></div>
+    <div class="sug-inner">
+      <div class="sug-header">
+        <span class="sug-icon">💡</span>
         <div>
-          <div class="lf-title">Lost & Found</div>
-          <div class="lf-sub">Help reunite things with their owners</div>
+          <div class="sug-title">Got a suggestion?</div>
+          <div class="sug-sub">Anonymous · goes straight to the team</div>
         </div>
       </div>
-      <div class="lf-btns">
-        <button class="lf-btn lf-btn-lost" onclick="openLFModal('lost')">📢 I Lost Something</button>
-        <button class="lf-btn lf-btn-found" onclick="openLFModal('found')">📦 I Found Something</button>
+      <textarea class="sug-input" id="sug-text" maxlength="280" rows="3" placeholder="Share feedback, ideas, complaints... anything. We read every one."></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+        <span style="font-size:.62em;color:var(--faint);" id="sug-ct">0/280</span>
+        <button class="sug-btn" onclick="submitSuggestion()">Send anonymously →</button>
       </div>
-      <div class="lf-list" id="lf-list">
-        <div class="lf-empty">No active lost & found items</div>
-      </div>
+      <div id="sug-thanks" style="display:none;text-align:center;font-size:.82em;font-weight:700;color:var(--green);padding:10px 0 2px;">✅ Sent! Thank you 🙏</div>
     </div>
   </div>
-
-  <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-div"></div>
     <div class="footer-inner">
@@ -772,7 +812,6 @@ var ILOCK = "fundbaseu2024";
 var T_MESS=2, T_GYM=2, T_NESCAFE=2, T_NANDINI=2, T_BAD=2, T_DOC=2;
 var CS_THRESH = 2, CS_TTL = 2700000; // 45 min
 var ANN_EXP = 43200000; // 12hr
-var LF_TTL  = 172800000; // 48hr
 
 // Lecture halls
 var ROOMS = ["LH1","LH2","LH3","LH4","LH5","LH6","LH7","LH8","LH9"];
@@ -782,7 +821,8 @@ var FACULTY = [
   "— Not sure / Any",
   "Dr. Bidur","Dr. Megha","Dr. Irfan","Dr. Shameer",
   "Dr. Nageshwar","Dr. Ishfaq","Dr. Muzaffar","Dr. Kasturi",
-  "Dr. Moushmi","Dr. Sushmita","Dr. Asha","Dean"
+  "Dr. Moushmi","Dr. Sushmita","Dr. Asha","Dr. Mahesh","Dean",
+  "✏️ Visiting Faculty (type name)"
 ];
 
 // ── FIREBASE ──
@@ -831,49 +871,143 @@ function bgClose(e){ if(e.target===ge("modal")) closeModal(); }
 function openModal(html){ ge("mbox").innerHTML=html; ge("modal").classList.add("open"); }
 
 // ══════════════════════════════════════════
-//  WEEKEND COUNTDOWN
+//  SEMESTER COUNTDOWN
+//  Even sem: Jan 1 → May 15   (approx)
+//  Odd  sem: Aug 1 → Dec 20   (approx)
 // ══════════════════════════════════════════
+function getSemesterInfo(now){
+  var y = now.getFullYear();
+  var m = now.getMonth(); // 0-indexed
+
+  // Define semester windows (month is 0-indexed)
+  var even = { start: new Date(y, 0, 6),  end: new Date(y, 4, 15) }; // Jan 6 – May 15
+  var odd  = { start: new Date(y, 7, 1),  end: new Date(y, 11, 20) }; // Aug 1 – Dec 20
+
+  // Are we inside even sem?
+  if(now >= even.start && now <= even.end){
+    return { name:"Even Semester", sem:"even", phase:"active", end: even.end };
+  }
+  // Are we inside odd sem?
+  if(now >= odd.start && now <= odd.end){
+    return { name:"Odd Semester", sem:"odd", phase:"active", end: odd.end };
+  }
+  // Between May 15 and Aug 1 — summer break, count to odd sem start
+  if(now > even.end && now < odd.start){
+    return { name:"Odd Semester", sem:"odd", phase:"upcoming", start: odd.start };
+  }
+  // Between Dec 20 and Jan 6 next year — winter break, count to even sem start
+  var nextEven = { start: new Date(y+1, 0, 6) };
+  return { name:"Even Semester", sem:"even", phase:"upcoming", start: nextEven.start };
+}
+
 function renderCountdown(){
   var now = new Date();
-  var day = now.getDay(); // 0=Sun, 6=Sat
-  var isWeekend = day===0 || day===6;
-  var el = ge("wknd-banner");
+  var el  = ge("wknd-banner");
+  var sem = getSemesterInfo(now);
 
-  if(isWeekend){
-    el.innerHTML = '<div class="wknd-card"><div class="wknd-left"><div class="wknd-label">Status</div><div class="wknd-msg">🎉 It\'s the Weekend!</div><div class="wknd-sub">Relax, recharge, restart</div></div><div class="wknd-today" style="font-size:2.5em;">🎊</div></div>';
-    return;
+  var semColor = sem.sem==="even"
+    ? "linear-gradient(135deg,#0c1a40,#1a2a5e,#0a2a40)"   // blue — even
+    : "linear-gradient(135deg,#1a0c2e,#2d1450,#0e1a30)";  // violet — odd
+
+  var borderColor = sem.sem==="even"
+    ? "rgba(59,130,246,.45)"
+    : "rgba(139,92,246,.45)";
+
+  var glowColor = sem.sem==="even"
+    ? "rgba(59,130,246,.18)"
+    : "rgba(139,92,246,.18)";
+
+  var accentColor = sem.sem==="even" ? "#60a5fa" : "#a78bfa";
+
+  if(sem.phase === "active"){
+    // Counting DOWN to semester end
+    var diff = sem.end - now;
+    if(diff <= 0){
+      // Semester just ended — re-evaluate next tick
+      setTimeout(renderCountdown, 3000); return;
+    }
+    var totalDays  = Math.round((sem.end - new Date(sem.end.getFullYear(), sem.sem==="even"?0:7, sem.sem==="even"?6:1)) / 86400000);
+    var daysLeft   = Math.floor(diff / 86400000);
+    var hoursLeft  = Math.floor((diff % 86400000) / 3600000);
+    var minsLeft   = Math.floor((diff % 3600000)  / 60000);
+    var pct        = Math.max(0, Math.round(((totalDays - daysLeft) / totalDays) * 100));
+
+    // Motivational message based on how far in
+    var msgs;
+    if(daysLeft > 60)      msgs = ["Long road ahead 📚","Semester just started 🌱","Pace yourself ☕"];
+    else if(daysLeft > 30) msgs = ["Midpoint grind 💪","Halfway there 🏃","Keep going 🔥"];
+    else if(daysLeft > 14) msgs = ["Almost there ⚡","Final stretch 🏁","Push through 💥"];
+    else                   msgs = ["Last few days! 🎉","Finish strong 🔥","Nearly done!! 🎊"];
+    var msg = msgs[Math.floor(Date.now()/3600000) % msgs.length];
+
+    el.innerHTML =
+      '<div class="wknd-card" style="background:'+semColor+';border-color:'+borderColor+';box-shadow:0 0 40px '+glowColor+';">' +
+        '<div class="wknd-left">' +
+          '<div class="wknd-label" style="color:'+accentColor+';">📅 '+sem.name+' ends in</div>' +
+          '<div class="wknd-msg">'+msg+'</div>' +
+          '<div class="wknd-sub">Ends '+sem.end.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})+'</div>' +
+          '<div style="margin-top:8px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden;height:5px;width:100%;">'+
+            '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,'+accentColor+',#34d399);border-radius:6px;transition:width 1s ease;"></div>'+
+          '</div>'+
+          '<div style="font-size:.6em;color:rgba(255,255,255,.3);margin-top:3px;">'+pct+'% complete · '+daysLeft+' day'+(daysLeft!==1?"s":"")+' left</div>'+
+        '</div>' +
+        '<div class="wknd-timer">' +
+          '<div class="wt-blk"><span class="wt-num" style="color:'+accentColor+';">'+String(daysLeft).padStart(2,"0")+'</span><span class="wt-lbl">Days</span></div>' +
+          '<div class="wt-blk"><span class="wt-num" style="color:'+accentColor+';">'+String(hoursLeft).padStart(2,"0")+'</span><span class="wt-lbl">Hrs</span></div>' +
+          '<div class="wt-blk"><span class="wt-num" style="color:'+accentColor+';">'+String(minsLeft).padStart(2,"0")+'</span><span class="wt-lbl">Min</span></div>' +
+        '</div>' +
+      '</div>';
+
+  } else {
+    // BREAK — counting UP to next semester
+    var diff2   = sem.start - now;
+    var days2   = Math.floor(diff2 / 86400000);
+    var hours2  = Math.floor((diff2 % 86400000) / 3600000);
+    var mins2   = Math.floor((diff2 % 3600000)  / 60000);
+    var breakMsg = days2 > 30 ? "Enjoy the break! ☀️" : days2 > 7 ? "Break winding down 🌅" : "Sem starts soon 😬";
+
+    el.innerHTML =
+      '<div class="wknd-card" style="background:'+semColor+';border-color:'+borderColor+';box-shadow:0 0 40px '+glowColor+';">' +
+        '<div class="wknd-left">' +
+          '<div class="wknd-label" style="color:'+accentColor+';">🎉 '+sem.name+' starts in</div>' +
+          '<div class="wknd-msg">'+breakMsg+'</div>' +
+          '<div class="wknd-sub">Starts '+sem.start.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})+'</div>' +
+        '</div>' +
+        '<div class="wknd-timer">' +
+          '<div class="wt-blk"><span class="wt-num" style="color:'+accentColor+';">'+String(days2).padStart(2,"0")+'</span><span class="wt-lbl">Days</span></div>' +
+          '<div class="wt-blk"><span class="wt-num" style="color:'+accentColor+';">'+String(hours2).padStart(2,"0")+'</span><span class="wt-lbl">Hrs</span></div>' +
+          '<div class="wt-blk"><span class="wt-num" style="color:'+accentColor+';">'+String(mins2).padStart(2,"0")+'</span><span class="wt-lbl">Min</span></div>' +
+        '</div>' +
+      '</div>';
   }
-
-  // Target: Friday 6pm (or Saturday if past)
-  var target = new Date(now);
-  var daysUntilFri = (5 - day + 7) % 7;
-  if(daysUntilFri === 0 && now.getHours() >= 18) daysUntilFri = 7;
-  target.setDate(now.getDate() + daysUntilFri);
-  target.setHours(18, 0, 0, 0);
-
-  var diff = target - now;
-  var days  = Math.floor(diff / 86400000);
-  var hours = Math.floor((diff % 86400000) / 3600000);
-  var mins  = Math.floor((diff % 3600000) / 60000);
-
-  var msgs = ["Weekend incoming ⚡","Almost there... 🏁","Midweek grind 💪","You got this 🔥","Just getting started 📚"];
-  var msg = msgs[Math.min(days, msgs.length-1)];
-
-  el.innerHTML =
-    '<div class="wknd-card">' +
-      '<div class="wknd-left">' +
-        '<div class="wknd-label">⏳ Weekend in</div>' +
-        '<div class="wknd-msg">' + msg + '</div>' +
-        '<div class="wknd-sub">Friday 6pm · ' + ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][now.getDay()] + ', ' + now.toLocaleDateString("en-IN",{day:"numeric",month:"short"}) + '</div>' +
-      '</div>' +
-      '<div class="wknd-timer">' +
-        '<div class="wt-blk"><span class="wt-num">' + String(days).padStart(2,"0") + '</span><span class="wt-lbl">Days</span></div>' +
-        '<div class="wt-blk"><span class="wt-num">' + String(hours).padStart(2,"0") + '</span><span class="wt-lbl">Hrs</span></div>' +
-        '<div class="wt-blk"><span class="wt-num">' + String(mins).padStart(2,"0") + '</span><span class="wt-lbl">Min</span></div>' +
-      '</div>' +
-    '</div>';
 }
 renderCountdown(); setInterval(renderCountdown, 30000);
+
+// ── SEMESTER END TICKER (simple inline strip) ──
+function renderSemTicker(){
+  var el = ge("sem-ticker"); if(!el) return;
+  var now = new Date();
+  var sem = getSemesterInfo(now);
+  var txt, color, bg;
+  if(sem.phase === "active"){
+    var diff = sem.end - now;
+    var days = Math.floor(diff / 86400000);
+    var label = days <= 0 ? "Semester ends today! 🎉"
+              : days === 1 ? "Semester ends tomorrow 🏁"
+              : "This semester ends in ~" + days + " day" + (days!==1?"s":"");
+    txt   = "📅 " + label + " · " + sem.name;
+    color = sem.sem==="even" ? "#60a5fa" : "#a78bfa";
+    bg    = sem.sem==="even" ? "rgba(59,130,246,.08)" : "rgba(139,92,246,.08)";
+  } else {
+    var diff2 = sem.start - now;
+    var days2 = Math.floor(diff2 / 86400000);
+    txt   = "🎉 On break · " + sem.name + " starts in ~" + days2 + " day" + (days2!==1?"s":"");
+    color = sem.sem==="even" ? "#60a5fa" : "#a78bfa";
+    bg    = sem.sem==="even" ? "rgba(59,130,246,.08)" : "rgba(139,92,246,.08)";
+  }
+  el.innerHTML = '<div style="text-align:center;font-size:.74em;font-weight:700;color:'+color+';background:'+bg+';border:1px solid '+color.replace("f","4")+'4;border-radius:20px;padding:6px 14px;margin:10px 0 4px;">'+txt+'</div>';
+}
+renderSemTicker(); setInterval(renderSemTicker, 60000);
 
 // ══════════════════════════════════════════
 //  MESS MENU DATA
@@ -1251,10 +1385,11 @@ function openClassModal(room){
       var stLabel={"ongoing":"🟢 Class Ongoing","waiting":"🟡 Students Waiting","cancelled":"🔴 Cancelled"}[existing.status]||existing.status;
       var cv=existing.confirmations||1;
       var profDisplay=(existing.prof&&existing.prof!=="— Not sure / Any")?" · "+existing.prof:"";
-      h+='<div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:14px;font-size:.8em;color:var(--muted);">Current: <strong style="color:var(--text);">'+stLabel+profDisplay+'</strong> · '+cv+'/'+CS_THRESH+' confirmed</div>';
+      h+='<div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:14px;font-size:.8em;color:var(--muted);">Current: <strong style="color:var(--text);">'+stLabel+esc(profDisplay)+'</strong> · '+cv+'/'+CS_THRESH+' confirmed</div>';
     }
     h+='<div class="m-label">Who\'s the professor? (optional)</div>';
-    h+='<select class="m-select" id="cs-prof-sel" style="margin-top:0;">'+profOpts+'</select>';
+    h+='<select class="m-select" id="cs-prof-sel" onchange="onProfChange(this)">'+profOpts+'</select>';
+    h+='<div id="cs-visiting-wrap" style="display:none;margin-top:8px;"><input class="m-input" id="cs-visiting-name" maxlength="50" placeholder="Enter visiting faculty name..." style="margin-top:0;"></div>';
     h+='<div class="m-label" style="margin-top:14px;">What\'s the class status?</div>';
     h+='<div class="m-btn-row">';
     h+='<button class="m-btn m-btn-green" onclick="setClassSignal(\''+room+'\',\'ongoing\')">🟢 Class Ongoing</button>';
@@ -1269,10 +1404,21 @@ function openClassModal(room){
   });
 }
 
+function onProfChange(sel){
+  var wrap = ge("cs-visiting-wrap");
+  if(wrap) wrap.style.display = sel.value === "✏️ Visiting Faculty (type name)" ? "block" : "none";
+}
+
 function setClassSignal(room, status){
-  // Grab selected prof from the dropdown in the modal
   var profSel = ge("cs-prof-sel");
-  var profName = profSel ? profSel.value : "";
+  var profRaw = profSel ? profSel.value : "";
+  var profName = profRaw;
+  // If visiting faculty, use the typed name
+  if(profRaw === "✏️ Visiting Faculty (type name)"){
+    var vInput = ge("cs-visiting-name");
+    var vName = vInput ? vInput.value.trim() : "";
+    profName = vName ? "Visiting: "+vName : "Visiting Faculty";
+  }
 
   // Per-slot key: allow re-reporting each class period (not just daily)
   // Key = room + date + approx 45min slot index
@@ -1318,77 +1464,29 @@ function clearClassSignal(key){
 }
 
 // ══════════════════════════════════════════
-//  LOST & FOUND
+//  SUGGESTIONS
 // ══════════════════════════════════════════
-var LF_CATS = ["📱 Phone","💻 Laptop","🎒 Bag/Backpack","🔑 Keys","💳 Card/ID","📔 Book/Notes","🎧 Earphones/Headphones","🧢 Clothing/Cap","💡 Charger/Cable","📌 Stationery","Other"];
-var LF_LOCS = ["LH Block","Library","Mess","Hostel corridor","Gym","Nescafé area","Campus lawn","Badminton court","Lab","Reception"];
+(function(){
+  var inp = document.getElementById("sug-text");
+  if(inp) inp.addEventListener("input", function(){
+    var ct = document.getElementById("sug-ct");
+    if(ct) ct.textContent = this.value.length + "/280";
+  });
+})();
 
-function openLFModal(type){
-  var isLost = type==="lost";
-  var h='<div class="mh"><span class="mh-title">'+(isLost?"📢 Report Lost Item":"📦 Found Something")+'</span><button class="mx" onclick="closeModal()">✕</button></div>';
-  h+='<div class="m-label">Item Category</div>';
-  h+='<select class="m-select" id="lf-cat"><option value="">Select category...</option>'+LF_CATS.map(function(c){ return '<option>'+c+'</option>'; }).join('')+'</select>';
-  h+='<div class="m-label">Brief Description</div>';
-  h+='<textarea class="m-input" id="lf-desc" rows="2" maxlength="120" placeholder="e.g. Black iPhone 13 with cracked screen..."></textarea>';
-  h+='<div class="m-label">Location '+(isLost?"Last Seen":"Found At")+'</div>';
-  h+='<select class="m-select" id="lf-loc"><option value="">Select location...</option>'+LF_LOCS.map(function(l){ return '<option>'+l+'</option>'; }).join('')+'</select>';
-  if(!isLost){
-    h+='<div class="m-label">Where to collect it?</div>';
-    h+='<input class="m-input" id="lf-contact" maxlength="80" placeholder="e.g. Hostel Room 204 / Hand it to reception...">';
-  }
-  h+='<div class="m-btn-row" style="margin-top:16px;">';
-  h+='<button class="m-btn '+(isLost?"m-btn-red":"m-btn-green")+'" onclick="submitLF(\''+type+'\')">Submit</button>';
-  h+='<button class="m-btn m-btn-secondary" onclick="closeModal()">Cancel</button>';
-  h+='</div>';
-  openModal(h);
+function submitSuggestion(){
+  var inp = ge("sug-text");
+  var txt = (inp ? inp.value : "").trim();
+  if(!txt) return toast("Write something first 💡");
+  var devKey = "sug_" + new Date().toDateString();
+  if(localStorage.getItem(devKey)) return toast("Already sent one today. Thanks!");
+  db.ref("suggestions").push({ text: txt, ts: Date.now() });
+  localStorage.setItem(devKey, "1");
+  inp.value = ""; ge("sug-ct").textContent = "0/280";
+  ge("sug-thanks").style.display = "block";
+  setTimeout(function(){ ge("sug-thanks").style.display = "none"; }, 4000);
+  toast("💡 Suggestion sent!");
 }
-
-function submitLF(type){
-  var cat=(ge("lf-cat")||{}).value||"";
-  var desc=((ge("lf-desc")||{}).value||"").trim();
-  var loc=(ge("lf-loc")||{}).value||"";
-  var contact=((ge("lf-contact")||{}).value||"").trim();
-  if(!desc) return toast("Please describe the item");
-  if(!loc) return toast("Please select a location");
-  db.ref("lostFound").push({type:type, cat:cat, desc:desc, loc:loc, contact:contact||"", ts:Date.now()});
-  toast(type==="lost"?"📢 Report posted! Hope you find it.":"📦 Thanks for helping!");
-  closeModal();
-}
-
-function resolveLF(key){
-  if(!confirm("Mark as resolved / found?")) return;
-  db.ref("lostFound/"+key).remove();
-  toast("✅ Removed from board");
-}
-
-function cleanLF(){
-  db.ref("lostFound").once("value",function(snap){ var now=Date.now(); snap.forEach(function(c){ var d=c.val(); if(d&&(now-d.ts)>LF_TTL) db.ref("lostFound/"+c.key).remove(); }); });
-}
-cleanLF(); setInterval(cleanLF, 300000);
-
-db.ref("lostFound").orderByChild("ts").on("value",function(snap){
-  var items=[], now=Date.now();
-  snap.forEach(function(c){ var d=c.val(); if(d&&(now-d.ts)<LF_TTL) items.push({id:c.key,...d}); });
-  items.reverse();
-  var el=ge("lf-list"); if(!el) return;
-  if(!items.length){ el.innerHTML='<div class="lf-empty">📭 No active lost & found items</div>'; return; }
-  el.innerHTML=items.map(function(it){
-    var icon=it.cat?it.cat.split(" ")[0]:"📦";
-    var ago_txt=ago(it.ts);
-    var contact_line=it.contact?'<div style="font-size:.7em;color:var(--green);margin-top:2px;">📍 '+esc(it.contact)+'</div>':'';
-    return '<div class="lf-item">'+
-      '<div class="lf-item-icon">'+icon+'</div>'+
-      '<div class="lf-item-body">'+
-        '<div class="lf-item-desc">'+esc(it.desc)+'</div>'+
-        '<div class="lf-item-loc">📍 '+esc(it.loc||"Unknown location")+'</div>'+
-        contact_line+
-        '<div class="lf-item-meta"><span class="lf-type-'+(it.type==="lost"?"lost":"found")+'">'+(it.type==="lost"?"🔴 LOST":"🟢 FOUND")+'</span><span>'+ago_txt+'</span>'+
-          '<button class="lf-resolve-btn" onclick="resolveLF(\''+it.id+'\')">✓ Resolved</button>'+
-        '</div>'+
-      '</div>'+
-    '</div>';
-  }).join('');
-});
 
 // ══════════════════════════════════════════
 //  ANNOUNCEMENTS
