@@ -591,6 +591,39 @@ body.light .cu-tile { background: linear-gradient(135deg,#4f46e5,#2563eb,#0369a1
 .sug-btn:hover { opacity: .85; }
 
 /* ── LF CSS REMOVED ── */
+
+/* ── CLASS COLLAPSE TILE ── */
+.cs-collapse-tile {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; border-radius: var(--r-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer; transition: transform .18s, box-shadow .2s, border-color .2s;
+  -webkit-tap-highlight-color: transparent;
+  margin-bottom: 2px;
+}
+.cs-collapse-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.cs-collapse-tile.cs-open { border-color: rgba(139,92,246,.4); background: rgba(139,92,246,.05); }
+.cs-tile-left { display: flex; align-items: center; gap: 12px; }
+.cs-tile-icon { font-size: 1.7em; background: var(--bg-panel); padding: 8px; border-radius: 10px; border: 1px solid var(--border); }
+.cs-tile-name { font-size: .95em; font-weight: 800; color: var(--text); letter-spacing: -.2px; }
+.cs-tile-sub { font-size: .72em; color: var(--muted); margin-top: 2px; }
+.cs-tile-count { font-size: .7em; font-weight: 700; background: rgba(139,92,246,.12); border: 1px solid rgba(139,92,246,.25); color: #a78bfa; padding: 3px 10px; border-radius: 20px; }
+.cs-tile-arrow { font-size: .85em; color: var(--muted); transition: transform .25s; }
+.cs-tile-arrow.open { transform: rotate(180deg); }
+
+/* ── SUGGESTIONS FEED ── */
+.sug-feed-item {
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 10px 12px;
+  margin-bottom: 7px; animation: fadeUp .25s ease;
+  position: relative;
+}
+.sug-feed-text { font-size: .84em; color: var(--text); line-height: 1.5; font-weight: 500; }
+.sug-feed-meta { font-size: .63em; color: var(--faint); margin-top: 5px; display: flex; align-items: center; justify-content: space-between; }
+.sug-del-btn { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.2); color: #f87171; padding: 1px 7px; border-radius: 6px; font-size: .9em; font-weight: 700; cursor: pointer; font-family: inherit; }
+.sug-empty { text-align: center; color: var(--muted); font-size: .8em; padding: 16px; border: 1px dashed var(--border); border-radius: var(--r-sm); }
 </style>
 </head>
 <body>
@@ -745,18 +778,30 @@ body.light .cu-tile { background: linear-gradient(135deg,#4f46e5,#2563eb,#0369a1
     </div>
   </div>
 
-  <!-- CLASS SIGNAL SYSTEM -->
+  <!-- CLASS SIGNAL SYSTEM (collapsible) -->
   <div class="sec-head">
-    <div class="sec-title">🏫 Class Signal · Live</div>
+    <div class="sec-title">🏫 Class Live Tracker</div>
     <span style="font-size:.62em;color:var(--faint);">45min auto-reset</span>
   </div>
-  <div style="font-size:.74em;color:var(--muted);margin-bottom:12px;line-height:1.5;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-sm);">
-    💡 Tap your lecture hall to update status. 2 confirmations make it live.
+  <div class="cs-collapse-tile" id="cs-collapse-tile" onclick="toggleClassGrid()">
+    <div class="cs-tile-left">
+      <span class="cs-tile-icon">🏫</span>
+      <div>
+        <div class="cs-tile-name">LH1 – LH9 Status</div>
+        <div class="cs-tile-sub" id="cs-tile-sub">Tap to expand and view all halls</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="cs-tile-count" id="cs-tile-count"></span>
+      <span class="cs-tile-arrow" id="cs-tile-arrow">▼</span>
+    </div>
   </div>
-  <div class="class-signal-grid" id="class-grid"></div>
-
-  <!-- SEMESTER TICKER -->
-  <div id="sem-ticker"></div>
+  <div id="cs-expand-panel" style="display:none;margin-top:10px;">
+    <div style="font-size:.74em;color:var(--muted);margin-bottom:12px;line-height:1.5;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-sm);">
+      💡 Tap a lecture hall to update status. 2 confirmations make it live.
+    </div>
+    <div class="class-signal-grid" id="class-grid"></div>
+  </div>
 
   <!-- SUGGESTIONS -->
   <div class="sec-head">
@@ -778,6 +823,12 @@ body.light .cu-tile { background: linear-gradient(135deg,#4f46e5,#2563eb,#0369a1
         <button class="sug-btn" onclick="submitSuggestion()">Send anonymously →</button>
       </div>
       <div id="sug-thanks" style="display:none;text-align:center;font-size:.82em;font-weight:700;color:var(--green);padding:10px 0 2px;">✅ Sent! Thank you 🙏</div>
+      <!-- Suggestions feed -->
+      <div id="sug-feed-wrap" style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
+        <div style="font-size:.68em;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--faint);margin-bottom:10px;">Recent Suggestions</div>
+        <div id="sug-feed"><div class="sug-empty">No suggestions yet</div></div>
+        <div id="sug-feed-admin-note" style="display:none;font-size:.64em;color:var(--violet);margin-top:8px;text-align:right;cursor:pointer;" onclick="clearAllSuggestions()">🗑 Clear all (admin)</div>
+      </div>
     </div>
   </div>
   <footer class="footer">
@@ -983,31 +1034,7 @@ function renderCountdown(){
 }
 renderCountdown(); setInterval(renderCountdown, 30000);
 
-// ── SEMESTER END TICKER (simple inline strip) ──
-function renderSemTicker(){
-  var el = ge("sem-ticker"); if(!el) return;
-  var now = new Date();
-  var sem = getSemesterInfo(now);
-  var txt, color, bg;
-  if(sem.phase === "active"){
-    var diff = sem.end - now;
-    var days = Math.floor(diff / 86400000);
-    var label = days <= 0 ? "Semester ends today! 🎉"
-              : days === 1 ? "Semester ends tomorrow 🏁"
-              : "This semester ends in ~" + days + " day" + (days!==1?"s":"");
-    txt   = "📅 " + label + " · " + sem.name;
-    color = sem.sem==="even" ? "#60a5fa" : "#a78bfa";
-    bg    = sem.sem==="even" ? "rgba(59,130,246,.08)" : "rgba(139,92,246,.08)";
-  } else {
-    var diff2 = sem.start - now;
-    var days2 = Math.floor(diff2 / 86400000);
-    txt   = "🎉 On break · " + sem.name + " starts in ~" + days2 + " day" + (days2!==1?"s":"");
-    color = sem.sem==="even" ? "#60a5fa" : "#a78bfa";
-    bg    = sem.sem==="even" ? "rgba(59,130,246,.08)" : "rgba(139,92,246,.08)";
-  }
-  el.innerHTML = '<div style="text-align:center;font-size:.74em;font-weight:700;color:'+color+';background:'+bg+';border:1px solid '+color.replace("f","4")+'4;border-radius:20px;padding:6px 14px;margin:10px 0 4px;">'+txt+'</div>';
-}
-renderSemTicker(); setInterval(renderSemTicker, 60000);
+
 
 // ══════════════════════════════════════════
 //  MESS MENU DATA
@@ -1306,6 +1333,30 @@ function buildClassGrid(){
 }
 buildClassGrid();
 
+function toggleClassGrid(){
+  var panel = ge("cs-expand-panel");
+  var tile = ge("cs-collapse-tile");
+  var arrow = ge("cs-tile-arrow");
+  var isOpen = panel.style.display !== "none";
+  panel.style.display = isOpen ? "none" : "block";
+  tile.classList.toggle("cs-open", !isOpen);
+  arrow.classList.toggle("open", !isOpen);
+}
+
+// Update collapse tile summary
+function updateCsTileSummary(activeCount){
+  var sub = ge("cs-tile-sub");
+  var ct = ge("cs-tile-count");
+  if(!sub||!ct) return;
+  if(activeCount === 0){
+    sub.textContent = "All halls free — tap to expand";
+    ct.textContent = "";
+  } else {
+    sub.textContent = activeCount + " hall" + (activeCount!==1?"s":"") + " active · tap to expand";
+    ct.textContent = activeCount + " active";
+  }
+}
+
 // Clean expired class signals
 function cleanClassSignals(){
   db.ref("classSignals").once("value",function(snap){
@@ -1335,12 +1386,12 @@ db.ref("classSignals").on("value",function(snap){
     var card=ge("cs-"+room), dot=ge("csdot-"+room), bdg=ge("csbdg-"+room), tmr=ge("cstmr-"+room), conf=ge("csconf-"+room), prof=ge("csprof-"+room);
     if(!card) return;
     card.className="cs-card"; dot.className="cs-dot cs-dot-gray";
-    bdg.className="cs-badge bdg-gray"; bdg.textContent="Not Set";
+    bdg.className="cs-badge bdg-gray"; bdg.textContent="🆓 Free";
     if(tmr){ tmr.textContent=""; tmr._ts=null; }
     if(conf) conf.textContent="";
     if(prof) prof.textContent="";
   });
-  var now=Date.now();
+  var now=Date.now(), activeRooms=0;
   snap.forEach(function(c){
     var d=c.val(); if(!d) return;
     if(now-d.ts>CS_TTL) return;
@@ -1351,13 +1402,13 @@ db.ref("classSignals").on("value",function(snap){
     var rem=Math.max(0,CS_TTL-(now-d.ts)), mins=Math.ceil(rem/60000);
     if(st==="ongoing"){
       card.className="cs-card cs-active-green"; dot.className="cs-dot cs-dot-green";
-      bdg.className="cs-badge bdg-green"; bdg.textContent="🟢 Class Ongoing";
+      bdg.className="cs-badge bdg-green"; bdg.textContent="🟢 Occupied";
     } else if(st==="waiting"){
       card.className="cs-card cs-active-amber"; dot.className="cs-dot cs-dot-amber";
       bdg.className="cs-badge bdg-amber"; bdg.textContent="🟡 Waiting";
     } else if(st==="cancelled"){
-      card.className="cs-card cs-active-red"; dot.className="cs-dot cs-dot-red";
-      bdg.className="cs-badge bdg-red"; bdg.textContent="🔴 Cancelled";
+      card.className="cs-card"; dot.className="cs-dot cs-dot-gray";
+      bdg.className="cs-badge bdg-gray"; bdg.textContent="🆓 Free";
     }
     if(tmr){ tmr.textContent="⏱ "+mins+"m"; tmr._ts=d.ts; }
     if(conf) conf.textContent=cv>=CS_THRESH?"✅ "+cv+" confirmed":"🗳 "+cv+"/"+CS_THRESH;
@@ -1366,7 +1417,9 @@ db.ref("classSignals").on("value",function(snap){
       var profName = d.prof || "";
       profEl.textContent = (profName && profName !== "— Not sure / Any") ? "👤 "+profName : "";
     }
+    activeRooms++;
   });
+  updateCsTileSummary(activeRooms);
 });
 
 function openClassModal(room){
@@ -1382,7 +1435,7 @@ function openClassModal(room){
     var h='<div class="mh"><span class="mh-title">🏫 '+room+'</span><button class="mx" onclick="closeModal()">✕</button></div>';
     // Show current status if exists
     if(existing){
-      var stLabel={"ongoing":"🟢 Class Ongoing","waiting":"🟡 Students Waiting","cancelled":"🔴 Cancelled"}[existing.status]||existing.status;
+      var stLabel={"ongoing":"🟢 Occupied","waiting":"🟡 Students Waiting","cancelled":"🆓 Free"}[existing.status]||existing.status;
       var cv=existing.confirmations||1;
       var profDisplay=(existing.prof&&existing.prof!=="— Not sure / Any")?" · "+existing.prof:"";
       h+='<div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:14px;font-size:.8em;color:var(--muted);">Current: <strong style="color:var(--text);">'+stLabel+esc(profDisplay)+'</strong> · '+cv+'/'+CS_THRESH+' confirmed</div>';
@@ -1392,9 +1445,9 @@ function openClassModal(room){
     h+='<div id="cs-visiting-wrap" style="display:none;margin-top:8px;"><input class="m-input" id="cs-visiting-name" maxlength="50" placeholder="Enter visiting faculty name..." style="margin-top:0;"></div>';
     h+='<div class="m-label" style="margin-top:14px;">What\'s the class status?</div>';
     h+='<div class="m-btn-row">';
-    h+='<button class="m-btn m-btn-green" onclick="setClassSignal(\''+room+'\',\'ongoing\')">🟢 Class Ongoing</button>';
+    h+='<button class="m-btn m-btn-green" onclick="setClassSignal(\''+room+'\',\'ongoing\')">🟢 Occupied</button>';
     h+='<button class="m-btn m-btn-amber" onclick="setClassSignal(\''+room+'\',\'waiting\')">🟡 Students Waiting</button>';
-    h+='<button class="m-btn m-btn-red" onclick="setClassSignal(\''+room+'\',\'cancelled\')">🔴 Cancelled / Free</button>';
+    h+='<button class="m-btn m-btn-red" onclick="setClassSignal(\''+room+'\',\'cancelled\')">🆓 Mark as Free</button>';
     h+='</div>';
     if(isAdmin && existingKey){
       h+='<div class="m-adm-section"><div class="m-adm-label">Admin</div><button class="m-adm-btn" onclick="clearClassSignal(\''+existingKey+'\')">🗑 Clear Signal</button></div>';
@@ -1487,6 +1540,38 @@ function submitSuggestion(){
   setTimeout(function(){ ge("sug-thanks").style.display = "none"; }, 4000);
   toast("💡 Suggestion sent!");
 }
+
+function clearAllSuggestions(){
+  if(!checkAdmin()) return;
+  if(!confirm("Delete all suggestions?")) return;
+  db.ref("suggestions").remove();
+  toast("🗑 All cleared");
+}
+
+function deleteSuggestion(id){
+  if(!checkAdmin()) return;
+  db.ref("suggestions/"+id).remove();
+  toast("Deleted");
+}
+
+// Live suggestions feed
+db.ref("suggestions").orderByChild("ts").limitToLast(20).on("value",function(snap){
+  var items=[]; snap.forEach(function(c){ var d=c.val(); if(d) items.push({id:c.key,...d}); });
+  items.reverse();
+  var el=ge("sug-feed"); if(!el) return;
+  var adminNote=ge("sug-feed-admin-note");
+  if(adminNote) adminNote.style.display=isAdmin&&items.length>0?"block":"none";
+  if(!items.length){ el.innerHTML='<div class="sug-empty">No suggestions yet — be the first! 💡</div>'; return; }
+  el.innerHTML=items.map(function(p){
+    return '<div class="sug-feed-item">'+
+      '<div class="sug-feed-text">'+esc(p.text)+'</div>'+
+      '<div class="sug-feed-meta">'+
+        '<span>'+ago(p.ts)+'</span>'+
+        (isAdmin?'<button class="sug-del-btn" onclick="deleteSuggestion(\''+p.id+'\'")>🗑</button>':'')+
+      '</div>'+
+    '</div>';
+  }).join('');
+});
 
 // ══════════════════════════════════════════
 //  ANNOUNCEMENTS
